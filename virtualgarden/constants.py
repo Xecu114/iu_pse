@@ -1,4 +1,3 @@
-import pygame
 import pyautogui
 import os
 
@@ -21,7 +20,5 @@ GREEN_LIGHTER = (0, 255, 50)
 
 assets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
-# BG = pygame.transform.scale(pygame.image.load(str(os.path.join(assets_path, "greenbg.jpg"))),
-#                             (WIDTH, HEIGHT))
-TREE = pygame.transform.scale(pygame.image.load(str(os.path.join(assets_path, "Regenwald_Baum.jpg"))),
-                              (SQUARE_SIZE, SQUARE_SIZE))
+IMGDIR_GRASS = str(os.path.join(assets_path, "grass.png"))
+IMGDIR_TREE = str(os.path.join(assets_path, "Regenwald_Baum.jpg"))

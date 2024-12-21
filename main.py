@@ -1,6 +1,7 @@
 import pygame
-from virtualgarden.constants import WIDTH, HEIGHT
+from virtualgarden.constants import WIDTH, HEIGHT, IMGDIR_TREE, IMGDIR_GRASS
 from virtualgarden.garden import Garden
+from virtualgarden.gardenobjects import GardenObject
 pygame.init()
 
 FPS = 30
@@ -20,11 +21,22 @@ def draw_text():
 def main():
     running = True
     clock = pygame.time.Clock()
-    garden = Garden(WIN)
+    garden_objects = [
+        GardenObject("grass", IMGDIR_GRASS),
+        GardenObject("tree", IMGDIR_TREE)
+    ]
+    garden0 = Garden("virtualgarden\\gardens\\garden0.map", garden_objects)
+    garden0.garden_map[8][10] = 1
+    garden0.garden_map[9][10] = 1
+    garden0.garden_map[8][11] = 1
+    garden0.garden_map[9][11] = 1
     
     while running:
         clock.tick(FPS)
 
+        garden0.update_garden_map()
+        garden0.draw_garden_map(WIN)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -33,9 +45,12 @@ def main():
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_ESCAPE]:
                     running = False
-        
-    pygame.quit()
+            
+            # TODO add Tree by clicking on a Tile
 
+    garden0.save_garden_map()
+    pygame.quit()
+    
 
 if __name__ == '__main__':
     main()

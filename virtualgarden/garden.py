@@ -1,31 +1,36 @@
 import pygame
-from .constants import ROWS, COLS, SQUARE_SIZE, GREEN, GREEN_LIGHTER, TREE
+from .constants import ROWS, COLS, SQUARE_SIZE
+from virtualgarden.gardenobjects import PlacedObject, placed_objects
 
 
 class Garden:
-    def __init__(self, win):
-        self.board = []
-        self.create_board()
-        self.draw_board(win)
+    def __init__(self, map_file, garden_objects):
+        self.map_file = map_file
+        self.garden_objects = garden_objects
+        self.garden_map = []
+        self.init_garden_map()
     
-    def create_board(self):
+    def init_garden_map(self):
+        # TODO CHECK if file exists and if not create board
         for row in range(ROWS):
-            self.board.append([])
+            self.garden_map.append([])
             for col in range(COLS):
-                self.board[row].append(0)
-        
-    def draw_board(self, win):
-        win.fill(GREEN)
-        self.board[0][3] = 1
-        self.board[5][6] = 1
-        # for row in range(ROWS):
-        #     for col in range(row % 2, COLS, 2):
-        for i, row in enumerate(self.board):
-            for j, element in enumerate(row):
-                print(f"row:{i},col:{j}")
-                if element != 0:
-                    win.blit(TREE, (j*SQUARE_SIZE, i*SQUARE_SIZE))
-                    # pygame.draw.rect(win, GREEN_LIGHTER,
-                    #                  (j*SQUARE_SIZE, i*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-                    pygame.draw.rect
+                self.garden_map[row].append(0)
+        self.update_garden_map()
+    
+    def update_garden_map(self):
+        for y, row in enumerate(self.garden_map):
+            for x, element in enumerate(row):
+                PlacedObject(self.garden_objects[element], (x*SQUARE_SIZE, y*SQUARE_SIZE))
+
+    def draw_garden_map(self, win):
+        # win.fill(GREEN)
+        for o in placed_objects:
+            o.draw(win)
         pygame.display.update()
+    
+    def save_garden_map(self):
+        with open(self.map_file, 'w') as f:
+            for row in self.garden_map:
+                f.write("".join(map(str, row))+"\n")
+                
