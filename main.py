@@ -26,6 +26,7 @@ def main():
         GardenObject("grass", IMGDIR_GRASS),
         GardenObject("tree", IMGDIR_TREE)
     ]
+    # TODO add way more objects (incl. textures) and different vegetations / floras
     garden0 = Garden("virtualgarden\\gardens\\garden0.map", garden_objects)
     
     while running:
@@ -35,6 +36,9 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.dict['button'] == 1:
                     is_mouse_clicked = True
+                    
+            # if event.type == pygame.MOUSEMOTION:
+            # TODO add object moving with move if picked up
             
             if event.type == pygame.KEYDOWN:
                 keys = pygame.key.get_pressed()
@@ -46,8 +50,8 @@ def main():
                     
         if is_mouse_clicked:
             garden0.place_object()
-            is_mouse_clicked = False
-        
+
+        is_mouse_clicked = False
         garden0.update_garden_map()
         garden0.draw_garden_map(WIN)
 
