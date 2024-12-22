@@ -1,5 +1,5 @@
 import pygame
-from virtualgarden.constants import WIDTH, HEIGHT, IMGDIR_TREE, IMGDIR_GRASS
+from common.constants import WIDTH, HEIGHT, IMGDIR_TREE, IMGDIR_GRASS
 from virtualgarden.garden import Garden
 from virtualgarden.gardenobjects import GardenObject
 # from virtualgarden.input import is_mousebuttondown, get_mouseevent
