@@ -33,4 +33,7 @@ class Garden:
         with open(self.map_file, 'w') as f:
             for row in self.garden_map:
                 f.write("".join(map(str, row))+"\n")
-                
+    
+    def place_object(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        self.garden_map[mouse_y//SQUARE_SIZE][mouse_x//SQUARE_SIZE] = 1
