@@ -1,5 +1,5 @@
 import pygame
-from ..common.constants import SQUARE_SIZE
+from common.constants import SQUARE_SIZE
 
 placed_objects = []
 loaded_images = {}
