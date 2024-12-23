@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit
 from PyQt6.QtCore import QTimer, QTime, Qt
 from PyQt6.QtGui import QPainter, QColor, QPaintEvent
-from common.constants import PASTEL_BEIGE_HEX, PASTEL_GREEN_HEX
+from common.constants import PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX
 
 
 class CircleWithNumber(QWidget):
@@ -78,7 +78,7 @@ class MainWindow(QMainWindow):
 
         # Text Element
         text_label = QLabel("This is a text element")
-        text_label.setStyleSheet(f"font-size: 16px; color: {PASTEL_GREEN_HEX}")
+        text_label.setStyleSheet(f"font-size: 16px; color: {PASTEL_OCEANBAY_HEX}")
         layout.addWidget(text_label)
 
         # Circle with number
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
 
         # Button
         button = QPushButton("Garden")
-        button.setStyleSheet(f"font-size: 18px; padding: 10px; color: {PASTEL_GREEN_HEX}; border: 1px solid #84a59e; \
+        button.setStyleSheet(f"font-size: 18px; padding: 10px; color: {PASTEL_OCEANBAY_HEX}; border: 1px solid #84a59e;\
             background-color: transparent;")
         layout.addWidget(button)
 
@@ -105,14 +105,14 @@ class MainWindow(QMainWindow):
 
         # Digital clock
         self.clock_label = QLabel("00:00:00")
-        self.clock_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {PASTEL_GREEN_HEX}")
+        self.clock_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         layout.addWidget(self.clock_label)
 
         # Input field for number
         input_field = QLineEdit()
         input_field.setPlaceholderText("Enter a number")
-        input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_GREEN_HEX};\
-            border: 1px solid {PASTEL_GREEN_HEX};")
+        input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
         layout.addWidget(input_field)
 
         # Add spacer to push content to the top
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
 
         # Text "Projects"
         projects_label = QLabel("Projects")
-        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_GREEN_HEX}")
+        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         layout.addWidget(projects_label)
 
         # Add spacer to push content to the top
@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
         """Create a separator line."""
         separator = QWidget()
         separator.setFixedWidth(1)
-        separator.setStyleSheet(f"background-color: {PASTEL_GREEN_HEX};")
+        separator.setStyleSheet(f"background-color: {PASTEL_OCEANBAY_HEX};")
         return separator
 
     def setup_timer(self):
