@@ -1,5 +1,5 @@
 import pygame
-from ..common.constants import ROWS, COLS, SQUARE_SIZE
+from common.constants import ROWS, COLS, SQUARE_SIZE
 from virtualgarden.gardenobjects import PlacedObject, placed_objects
 
 
