@@ -1,8 +1,10 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit
 from PyQt6.QtCore import QTimer, QTime, Qt
-from PyQt6.QtGui import QPainter, QColor, QPaintEvent
-from common.constants import PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX
+from PyQt6.QtGui import QPainter, QColor, QPaintEvent, QPixmap
+from common.constants import WIDTH, HEIGHT, \
+    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, \
+    IMGDIR_GUI_FLOWER_MEADOW
 
 
 class CircleWithNumber(QWidget):
@@ -18,21 +20,26 @@ class CircleWithNumber(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Draw circle
-        painter.setBrush(QColor(132, 165, 158))
-        painter.setPen(QColor(0, 0, 0))
+        r, g, b = PASTEL_ROSE_RGB
+        painter.setBrush(QColor(r, g, b))
+        painter.setPen(QColor(r, g, b))
         painter.drawEllipse((self.w//10), (self.h//10), (self.w-(self.w//5)), (self.h-(self.h//5)))
 
         # Draw number in the circle
-        painter.setPen(QColor(255, 255, 255))
-        painter.setFont(self.font())
+        r, g, b = PASTEL_OCEANBAY_RGB
+        painter.setPen(QColor(r, g, b))
+        font = painter.font()
+        font.setBold(True)
+        font.setPointSize(14)
+        painter.setFont(font)
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.number))
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PyQt6 Example")
-        self.setGeometry(100, 100, 1280, 720)
+        self.setWindowTitle("ProductivityGarden")
+        self.setGeometry(100, 100, WIDTH, HEIGHT)
 
         # Set up UI
         self.setup_ui()
@@ -77,19 +84,52 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
 
         # Text Element
-        text_label = QLabel("This is a text element")
-        text_label.setStyleSheet(f"font-size: 16px; color: {PASTEL_OCEANBAY_HEX}")
-        layout.addWidget(text_label)
+        points_label = QLabel("Points")
+        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        layout.addWidget(points_label)
 
+        # Horizontal layout for circle and text
+        circle_and_text_layout_av = QHBoxLayout()
+        
         # Circle with number
-        circle = CircleWithNumber(42, 60, 60)
-        layout.addWidget(circle)
+        circle_av = CircleWithNumber(12, 60, 60)
+        circle_and_text_layout_av.addWidget(circle_av)
+        
+        # Label next to the circle
+        circle_text_label = QLabel("available")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_and_text_layout_av.addWidget(circle_text_label)
+        
+        # Add the horizontal layout to the main layout
+        layout.addLayout(circle_and_text_layout_av)
+        
+        # Horizontal layout for circle and text
+        circle_and_text_layout_tot = QHBoxLayout()
+        
+        circle_tot = CircleWithNumber(42, 60, 60)
+        circle_and_text_layout_tot.addWidget(circle_tot)
+        
+        # Label next to the circle
+        circle_text_label = QLabel("total")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_and_text_layout_tot.addWidget(circle_text_label)
+        
+        # Add the horizontal layout to the main layout
+        layout.addLayout(circle_and_text_layout_tot)
 
         # Button
-        button = QPushButton("Garden")
-        button.setStyleSheet(f"font-size: 18px; padding: 10px; color: {PASTEL_OCEANBAY_HEX}; border: 1px solid #84a59e;\
-            background-color: transparent;")
+        button = QPushButton("TO THE GARDENS")
+        button.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 10px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid #84a59e; background-color: transparent;")
         layout.addWidget(button)
+        
+        # Image
+        image_label = QLabel()
+        pixmap = QPixmap(IMGDIR_GUI_FLOWER_MEADOW)  # Get image
+        scaled_pixmap = pixmap.scaled((WIDTH//3), (HEIGHT*2//3), Qt.AspectRatioMode.IgnoreAspectRatio)  # Scale image
+        image_label.setPixmap(scaled_pixmap)    # Assign the scaled image
+        image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(image_label)
 
         # Add spacer to push content to the top
         layout.addStretch()
@@ -105,7 +145,7 @@ class MainWindow(QMainWindow):
 
         # Digital clock
         self.clock_label = QLabel("00:00:00")
-        self.clock_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         layout.addWidget(self.clock_label)
 
         # Input field for number
