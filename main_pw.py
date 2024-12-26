@@ -7,6 +7,53 @@ from common.constants import WIDTH, HEIGHT, \
     IMGDIR_GUI_FLOWER_MEADOW
 
 
+class TimeManagement:
+    def __init__(self):
+        self.timer = QTimer()
+        self.elapsed_time = QTime(0, 0, 0)
+        self.target_time = QTime(0, 0, 0)
+        self.mode = "stopped"  # "stopped", "running", "paused"
+
+    def start_stopwatch(self):
+        self.mode = "running"
+        self.timer.timeout.connect(self.increment_time)
+        self.timer.start(1000)
+
+    def pause(self):
+        if self.mode == "running":
+            self.timer.stop()
+            self.mode = "paused"
+
+    def stop(self):
+        self.timer.stop()
+        self.elapsed_time = QTime(0, 0, 0)
+        self.target_time = QTime(0, 0, 0)
+        self.mode = "stopped"
+
+    def set_timer(self, minutes, seconds=0):
+        self.target_time = QTime(0, minutes, seconds)
+
+    def start_timer(self):
+        self.mode = "running"
+        self.timer.timeout.connect(self.decrement_time)
+        self.timer.start(1000)
+
+    def increment_time(self):
+        self.elapsed_time = self.elapsed_time.addSecs(1)
+
+    def decrement_time(self):
+        if self.target_time == QTime(0, 0, 0):
+            self.timer.stop()
+            self.mode = "stopped"
+        else:
+            self.target_time = self.target_time.addSecs(-1)
+
+    def get_display_time(self):
+        if self.mode == "stopped" and self.target_time != QTime(0, 0, 0):
+            return self.target_time.toString("mm:ss")
+        return self.elapsed_time.toString("hh:mm:ss") if self.mode != "stopped" else "00:00:00"
+
+
 class CircleWithNumber(QWidget):
     def __init__(self, number, w, h, parent=None):
         super().__init__(parent)
@@ -42,11 +89,13 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, WIDTH, HEIGHT)
 
         # Set up UI
+        self.time_manager = TimeManagement()
         self.setup_ui()
 
-        # Timer for clock
-        self.time = QTime(0, 0, 0)
-        self.setup_timer()
+        # Timer for updating the clock label
+        self.update_timer = QTimer(self)
+        self.update_timer.timeout.connect(self.update_display)
+        self.update_timer.start(1000)
 
     def setup_ui(self):
         """Setup the main UI layout and widgets."""
@@ -88,7 +137,8 @@ class MainWindow(QMainWindow):
         self.draw_point_overview(layout)
         
         # create button to the gardens
-        self.button_togardens(layout)
+        button = self.create_button("TO THE GARDENS")
+        layout.addWidget(button)
         
         # Image
         image_label = QLabel()
@@ -114,7 +164,21 @@ class MainWindow(QMainWindow):
         self.clock_label = QLabel("00:00:00")
         self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         layout.addWidget(self.clock_label)
+        
+        # Buttons
+        buttons_layout = QHBoxLayout()
+        start_button = self.create_button("Start", self.start_stopwatch)
+        buttons_layout.addWidget(start_button)
 
+        pause_button = self.create_button("Pause", self.pause_time)
+        buttons_layout.addWidget(pause_button)
+        
+        stop_button = self.create_button("Stop", self.stop_time)
+        stop_button.clicked.connect(self.stop_time)
+        buttons_layout.addWidget(stop_button)
+        
+        layout.addLayout(buttons_layout)
+        
         # Input field for number
         input_field = QLineEdit()
         input_field.setPlaceholderText("Enter a number")
@@ -188,9 +252,9 @@ class MainWindow(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
-    
-    def button_togardens(self, layout):
-        button = QPushButton("TO THE GARDENS")
+
+    def create_button(self, text, callback=None):
+        button = QPushButton(text)
         button.setStyleSheet(f"""
             QPushButton{{
                 font-size: 16px;
@@ -209,17 +273,21 @@ class MainWindow(QMainWindow):
                 color: {PASTEL_OCEANBAY_HEX};
             }}
         """)
-        layout.addWidget(button)
+        if callback:
+            button.clicked.connect(callback)
+        return button
     
-    def setup_timer(self):
-        """Setup the timer to update the clock label."""
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_time)
-        self.timer.start(1000)  # Update every second
+    def update_display(self):
+        self.clock_label.setText(self.time_manager.get_display_time())
 
-    def update_time(self):
-        self.time = self.time.addSecs(1)
-        self.clock_label.setText(self.time.toString("hh:mm:ss"))
+    def start_stopwatch(self):
+        self.time_manager.start_stopwatch()
+
+    def pause_time(self):
+        self.time_manager.pause()
+
+    def stop_time(self):
+        self.time_manager.stop()
 
 
 if __name__ == "__main__":
