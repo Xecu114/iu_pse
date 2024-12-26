@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QVBo
 from PyQt6.QtCore import QTimer, QTime, Qt
 from PyQt6.QtGui import QPainter, QColor, QPaintEvent, QPixmap
 from common.constants import WIDTH, HEIGHT, \
-    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, \
+    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, \
     IMGDIR_GUI_FLOWER_MEADOW
 
 
@@ -80,48 +80,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def create_first_column(self):
-        """Create the first column with a text label, circle, and button."""
+        """Create the first column with the points overview,
+        "to the gardens" navigation button and an image of a meadow"""
         layout = QVBoxLayout()
-
-        # Text Element
-        points_label = QLabel("Points")
-        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        layout.addWidget(points_label)
-
-        # Horizontal layout for circle and text
-        circle_and_text_layout_av = QHBoxLayout()
         
-        # Circle with number
-        circle_av = CircleWithNumber(12, 60, 60)
-        circle_and_text_layout_av.addWidget(circle_av)
+        # create point overview
+        self.draw_point_overview(layout)
         
-        # Label next to the circle
-        circle_text_label = QLabel("available")
-        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        circle_and_text_layout_av.addWidget(circle_text_label)
-        
-        # Add the horizontal layout to the main layout
-        layout.addLayout(circle_and_text_layout_av)
-        
-        # Horizontal layout for circle and text
-        circle_and_text_layout_tot = QHBoxLayout()
-        
-        circle_tot = CircleWithNumber(42, 60, 60)
-        circle_and_text_layout_tot.addWidget(circle_tot)
-        
-        # Label next to the circle
-        circle_text_label = QLabel("total")
-        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        circle_and_text_layout_tot.addWidget(circle_text_label)
-        
-        # Add the horizontal layout to the main layout
-        layout.addLayout(circle_and_text_layout_tot)
-
-        # Button
-        button = QPushButton("TO THE GARDENS")
-        button.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 10px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid #84a59e; background-color: transparent;")
-        layout.addWidget(button)
+        # create button to the gardens
+        self.button_togardens(layout)
         
         # Image
         image_label = QLabel()
@@ -187,6 +154,63 @@ class MainWindow(QMainWindow):
         separator.setStyleSheet(f"background-color: {PASTEL_OCEANBAY_HEX};")
         return separator
 
+    def draw_point_overview(self, layout):
+        # Text Element
+        points_label = QLabel("Points")
+        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        layout.addWidget(points_label)
+
+        # Horizontal layout for circle and text
+        circle_and_text_layout_av = QHBoxLayout()
+        
+        # Circle with number
+        circle_av = CircleWithNumber(12, 60, 60)
+        circle_and_text_layout_av.addWidget(circle_av)
+        
+        # Label next to the circle
+        circle_text_label = QLabel("available")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_and_text_layout_av.addWidget(circle_text_label)
+        
+        # Add the horizontal layout to the main layout
+        layout.addLayout(circle_and_text_layout_av)
+        
+        # Horizontal layout for circle and text
+        circle_and_text_layout_tot = QHBoxLayout()
+        
+        circle_tot = CircleWithNumber(42, 60, 60)
+        circle_and_text_layout_tot.addWidget(circle_tot)
+        
+        # Label next to the circle
+        circle_text_label = QLabel("total")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_and_text_layout_tot.addWidget(circle_text_label)
+        
+        # Add the horizontal layout to the main layout
+        layout.addLayout(circle_and_text_layout_tot)
+    
+    def button_togardens(self, layout):
+        button = QPushButton("TO THE GARDENS")
+        button.setStyleSheet(f"""
+            QPushButton{{
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+                color: {PASTEL_OCEANBAY_HEX};
+                border: 1px solid {PASTEL_OCEANBAY_HEX};
+                background-color: transparent;
+            }}
+            QPushButton:hover {{
+                background-color: {PASTEL_ROSE_HEX};
+                color: {PASTEL_OCEANBAY_HEX};
+            }}
+            QPushButton:pressed {{
+                background-color: {PASTEL_OCEANBAY_HEX};
+                color: {PASTEL_OCEANBAY_HEX};
+            }}
+        """)
+        layout.addWidget(button)
+    
     def setup_timer(self):
         """Setup the timer to update the clock label."""
         self.timer = QTimer(self)
