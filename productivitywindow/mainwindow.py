@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QTime, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from productivitywindow.timemanagement import TimeManagement
 from common.constants import WIDTH, HEIGHT, \
-    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, \
+    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
     IMGDIR_GUI_FLOWER_MEADOW
 
 
@@ -134,15 +134,21 @@ class MainWindow(QMainWindow):
         
         layout.addLayout(buttons_layout)
         
-        # Input field for number
-        self.time_input_field = QLineEdit()
-        self.time_input_field.setText("00:00:00")
-        self.time_input_field.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+        # Input field for timer
+        self.timer_input_field = QLineEdit()
+        self.timer_input_field.setText("00:00:00")
+        self.timer_input_field.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        self.time_input_field.setVisible(False)
-        layout.addWidget(self.time_input_field)
+        self.timer_input_field.setVisible(False)
+        layout.addWidget(self.timer_input_field)
         
-        # Toggle button for Stopwatch/Timer
+        # Text element for errors
+        self.input_error_label = QLabel("")
+        self.input_error_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_RED_HEX}")
+        self.input_error_label.setVisible(False)
+        layout.addWidget(self.input_error_label)
+        
+        # Toggle button for stopwatch/timer
         self.mode_toggle_button = self.create_button("Switch to Timer", self.toggle_mode)
         layout.addWidget(self.mode_toggle_button)
 
@@ -188,6 +194,30 @@ class MainWindow(QMainWindow):
         separator.setStyleSheet(f"background-color: {PASTEL_OCEANBAY_HEX};")
         return separator
 
+    def create_button(self, text, callback=None):
+        button = QPushButton(text)
+        button.setStyleSheet(f"""
+            QPushButton{{
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+                color: {PASTEL_OCEANBAY_HEX};
+                border: 1px solid {PASTEL_OCEANBAY_HEX};
+                background-color: transparent;
+            }}
+            QPushButton:hover {{
+                background-color: {PASTEL_ROSE_HEX};
+                color: {PASTEL_OCEANBAY_HEX};
+            }}
+            QPushButton:pressed {{
+                background-color: {PASTEL_OCEANBAY_HEX};
+                color: {PASTEL_OCEANBAY_HEX};
+            }}
+        """)
+        if callback:
+            button.clicked.connect(callback)
+        return button
+
     def draw_point_overview(self, layout):
         # Text Element
         points_label = QLabel("Points")
@@ -222,30 +252,6 @@ class MainWindow(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
-
-    def create_button(self, text, callback=None):
-        button = QPushButton(text)
-        button.setStyleSheet(f"""
-            QPushButton{{
-                font-size: 16px;
-                font-weight: bold;
-                padding: 10px;
-                color: {PASTEL_OCEANBAY_HEX};
-                border: 1px solid {PASTEL_OCEANBAY_HEX};
-                background-color: transparent;
-            }}
-            QPushButton:hover {{
-                background-color: {PASTEL_ROSE_HEX};
-                color: {PASTEL_OCEANBAY_HEX};
-            }}
-            QPushButton:pressed {{
-                background-color: {PASTEL_OCEANBAY_HEX};
-                color: {PASTEL_OCEANBAY_HEX};
-            }}
-        """)
-        if callback:
-            button.clicked.connect(callback)
-        return button
     
     def update_display(self):
         """Update the displayed time on the GUI."""
@@ -256,52 +262,50 @@ class MainWindow(QMainWindow):
             else:
                 # Stopwatch mode
                 self.clock_label.setText(self.time_manager.elapsed_time.toString("hh:mm:ss"))
+            self.pause_button.setText("Pause")
         elif self.time_manager.mode == "paused":
-            pass
+            self.pause_button.setText("Resume")
         elif self.time_manager.mode == "stopped":
             # Default to "00:00:00" if stopped
             self.clock_label.setText("00:00:00")
+            self.pause_button.setText("-")
 
     def start_time(self):
         """Start the stopwatch or timer."""
+        self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.is_stopwatch:
             self.time_manager.start_stopwatch()
         else:
             # Parse the input field for timer duration
-            time_text = self.time_input_field.text()
+            time_text = self.timer_input_field.text()
             try:
                 hours, minutes, seconds = map(int, time_text.split(":"))
                 self.time_manager.set_timer(hours, minutes, seconds)
                 self.time_manager.start_timer()
-                self.update_display()
             except ValueError:
-                self.clock_label.setText("Invalid Time Format")
+                # show error on gui
+                self.input_error_label.setText("Invalid Time Format")
+                self.input_error_label.setVisible(True)
                 print(f"Error: Invalid time format provided for timer: {time_text}")  # Debug message
-        self.pause_button.setText("Pause")
         
     def pause_time(self):
         """Pause or resume the timer/stopwatch."""
         if self.time_manager.mode == "running":
             self.time_manager.pause()  # Pause the timer/stopwatch
-            self.pause_button.setText("Resume")
         elif self.time_manager.mode == "paused":
             self.time_manager.resume()  # Resume the timer/stopwatch
-            self.pause_button.setText("Pause")
 
     def stop_time(self):
         self.time_manager.stop()
-        self.pause_button.setText("-")
     
     def toggle_mode(self):
         """Switch between Stopwatch and Timer."""
+        self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.is_stopwatch:
             self.time_manager.set_mode("timer")
             self.mode_toggle_button.setText("Switch to Stopwatch")
-            # self.clock_label.setText("00:00:00")
-            self.time_input_field.setVisible(True)
+            self.timer_input_field.setVisible(True)
         else:
             self.time_manager.set_mode("stopwatch")
             self.mode_toggle_button.setText("Switch to Timer")
-            # self.clock_label.setText("00:00:00")
-            self.time_input_field.setVisible(False)
-        self.pause_button.setText("-")
+            self.timer_input_field.setVisible(False)
