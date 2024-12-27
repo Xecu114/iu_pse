@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, \
     QPlainTextEdit
-from PyQt6.QtCore import Qt, QTime, QTimer
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from productivitywindow.timemanagement import TimeManagement
 from common.constants import WIDTH, HEIGHT, \
@@ -114,6 +114,12 @@ class MainWindow(QMainWindow):
         """Create the second column with a clock label and input field."""
         layout = QVBoxLayout()
 
+        # Display current timer mode
+        self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
+        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.timer_mode_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.timer_mode_label)
+        
         # Digital clock
         self.clock_label = QLabel("00:00:00")
         self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
@@ -252,30 +258,36 @@ class MainWindow(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
-    
+
     def update_display(self):
         """Update the displayed time on the GUI."""
+        self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
+        
         if self.time_manager.mode == "running":
-            if self.time_manager.target_time != QTime(0, 0, 0):
-                # Timer mode
-                self.clock_label.setText(self.time_manager.target_time.toString("hh:mm:ss"))
-            else:
-                # Stopwatch mode
+            if self.time_manager.selected_timer == "pomodoro":
+                phase = "Work" if self.time_manager.is_work_phase else "Break"
+                self.clock_label.setText(f"{phase}: {self.time_manager.target_time.toString('hh:mm:ss')}")
+            elif self.time_manager.selected_timer == "stopwatch":
                 self.clock_label.setText(self.time_manager.elapsed_time.toString("hh:mm:ss"))
+            elif self.time_manager.selected_timer == "timer":
+                self.clock_label.setText(self.time_manager.target_time.toString("hh:mm:ss"))
             self.pause_button.setText("Pause")
         elif self.time_manager.mode == "paused":
             self.pause_button.setText("Resume")
         elif self.time_manager.mode == "stopped":
-            # Default to "00:00:00" if stopped
             self.clock_label.setText("00:00:00")
             self.pause_button.setText("-")
+            if self.time_manager.timer_elapsed:
+                pass
 
     def start_time(self):
         """Start the stopwatch or timer."""
         self.input_error_label.setVisible(False)  # reset error on gui
-        if self.time_manager.is_stopwatch:
+        if self.time_manager.selected_timer == "pomodoro":
+            self.time_manager.start_pomodoro()
+        elif self.time_manager.selected_timer == "stopwatch":
             self.time_manager.start_stopwatch()
-        else:
+        elif self.time_manager.selected_timer == "timer":
             # Parse the input field for timer duration
             time_text = self.timer_input_field.text()
             try:
@@ -301,11 +313,15 @@ class MainWindow(QMainWindow):
     def toggle_mode(self):
         """Switch between Stopwatch and Timer."""
         self.input_error_label.setVisible(False)  # reset error on gui
-        if self.time_manager.is_stopwatch:
-            self.time_manager.set_mode("timer")
-            self.mode_toggle_button.setText("Switch to Stopwatch")
-            self.timer_input_field.setVisible(True)
-        else:
+        if self.time_manager.selected_timer == "pomodoro":
             self.time_manager.set_mode("stopwatch")
             self.mode_toggle_button.setText("Switch to Timer")
             self.timer_input_field.setVisible(False)
+        elif self.time_manager.selected_timer == "timer":
+            self.time_manager.set_mode("pomodoro")
+            self.mode_toggle_button.setText("Switch to Stopwatch")
+            self.timer_input_field.setVisible(False)
+        elif self.time_manager.selected_timer == "stopwatch":
+            self.time_manager.set_mode("timer")
+            self.mode_toggle_button.setText("Switch to Pomodoro")
+            self.timer_input_field.setVisible(True)
