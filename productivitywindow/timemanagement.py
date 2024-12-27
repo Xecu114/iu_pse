@@ -9,7 +9,7 @@ class TimeManagement:
         self.timer_elapsed = False  # True if Timer is elapsed
         self.is_work_phase = True
         self.pomodoro_work_time = QTime(0, 25, 0)
-        self.pomodoro_break_time = QTime(0, 25, 0)
+        self.pomodoro_break_time = QTime(0, 5, 0)
         self.selected_timer = "pomodoro"  # "pomodoro", "timer", "stoppwatch"
         self.mode = "stopped"  # "stopped", "running", "paused"
 
@@ -49,8 +49,10 @@ class TimeManagement:
         self.timer.timeout.connect(self.decrement_time)
         self.timer.start(1000)
 
-    def set_pomodoro_time(self):
+    def set_pomodoro_time(self, wh=0, wm=25, ws=0, bh=0, bm=5, bs=0):
         """Set the time based on the current phase and manual input."""
+        self.pomodoro_work_time = QTime(wh, wm, ws)
+        self.pomodoro_break_time = QTime(bh, bm, bs)
         if self.is_work_phase:
             self.set_timer(self.pomodoro_work_time.hour(),
                            self.pomodoro_work_time.minute(),
@@ -63,14 +65,20 @@ class TimeManagement:
     def start_pomodoro(self):
         """Starts the pomodoro-timer."""
         self.is_work_phase = True  # start with work phase
-        self.set_pomodoro_time()
         self.start_timer()
 
     def switch_pomodoro_phase(self):
         """Switches between work- and breakphase."""
         self.is_work_phase = not self.is_work_phase
         print(f"Pomodoro: switched to {"work" if self.is_work_phase else "break"}")  # Debug message
-        self.set_pomodoro_time()
+        if self.is_work_phase:
+            self.set_timer(self.pomodoro_work_time.hour(),
+                           self.pomodoro_work_time.minute(),
+                           self.pomodoro_work_time.second())
+        else:
+            self.set_timer(self.pomodoro_break_time.hour(),
+                           self.pomodoro_break_time.minute(),
+                           self.pomodoro_break_time.second())
         self.start_timer()
 
     def increment_time(self):

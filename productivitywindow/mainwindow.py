@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.clock_label)
         
-        # Buttons
+        # Buttons to control the various time functions
         buttons_layout = QHBoxLayout()
         start_button = self.create_button("Start", self.start_time)
         buttons_layout.addWidget(start_button)
@@ -139,6 +139,35 @@ class MainWindow(QMainWindow):
         buttons_layout.addWidget(stop_button)
         
         layout.addLayout(buttons_layout)
+        
+        # Input field #1 for pomodoro
+        work_input_layout = QHBoxLayout()
+        self.pomodoro_work_input = QLineEdit()
+        self.pomodoro_work_input.setText("00:25:00")
+        self.pomodoro_work_input.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_work_input.setVisible(True)
+        work_input_layout.addWidget(self.pomodoro_work_input)
+        # Label next to the input box
+        self.pomodoro_work_input_label = QLabel("set work time ")
+        self.pomodoro_work_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        work_input_layout.addWidget(self.pomodoro_work_input_label)
+        layout.addLayout(work_input_layout)
+        # Input field #2
+        break_input_layout = QHBoxLayout()
+        self.pomodoro_break_input = QLineEdit()
+        self.pomodoro_break_input.setText("00:05:00")
+        self.pomodoro_break_input.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_break_input.setVisible(True)
+        break_input_layout.addWidget(self.pomodoro_break_input)
+        # Label next to the input box
+        self.pomodoro_break_input_label = QLabel("set break time")
+        self.pomodoro_break_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        break_input_layout.addWidget(self.pomodoro_break_input_label)
+        layout.addLayout(break_input_layout)
         
         # Input field for timer
         self.timer_input_field = QLineEdit()
@@ -284,7 +313,20 @@ class MainWindow(QMainWindow):
         """Start the stopwatch or timer."""
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "pomodoro":
-            self.time_manager.start_pomodoro()
+            # Parse the input field for the work and break timer duration
+            work_text = self.pomodoro_work_input.text()
+            break_text = self.pomodoro_break_input.text()
+            try:
+                wh, wm, ws = map(int, work_text.split(":"))
+                bh, bm, bs = map(int, break_text.split(":"))
+                self.time_manager.set_pomodoro_time(wh, wm, ws, bh, bm, bs)
+                self.time_manager.start_pomodoro()
+            except ValueError:
+                # show error on gui
+                self.input_error_label.setText("Invalid Time Format")
+                self.input_error_label.setVisible(True)
+                print(f"Error: Invalid time format provided for timer: \
+                    work: {work_text} break: {break_text}")  # Debug message
         elif self.time_manager.selected_timer == "stopwatch":
             self.time_manager.start_stopwatch()
         elif self.time_manager.selected_timer == "timer":
@@ -317,11 +359,23 @@ class MainWindow(QMainWindow):
             self.time_manager.set_mode("stopwatch")
             self.mode_toggle_button.setText("Switch to Timer")
             self.timer_input_field.setVisible(False)
+            self.pomodoro_work_input.setVisible(True)
+            self.pomodoro_work_input_label.setVisible(True)
+            self.pomodoro_break_input.setVisible(True)
+            self.pomodoro_break_input_label.setVisible(True)
         elif self.time_manager.selected_timer == "timer":
             self.time_manager.set_mode("pomodoro")
             self.mode_toggle_button.setText("Switch to Stopwatch")
             self.timer_input_field.setVisible(False)
+            self.pomodoro_work_input.setVisible(False)
+            self.pomodoro_work_input_label.setVisible(False)
+            self.pomodoro_break_input.setVisible(False)
+            self.pomodoro_break_input_label.setVisible(False)
         elif self.time_manager.selected_timer == "stopwatch":
             self.time_manager.set_mode("timer")
             self.mode_toggle_button.setText("Switch to Pomodoro")
             self.timer_input_field.setVisible(True)
+            self.pomodoro_work_input.setVisible(False)
+            self.pomodoro_work_input_label.setVisible(False)
+            self.pomodoro_break_input.setVisible(False)
+            self.pomodoro_break_input_label.setVisible(False)
