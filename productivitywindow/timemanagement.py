@@ -3,6 +3,8 @@ from PyQt6.QtCore import QTime, QTimer
 
 class TimeManagement:
     def __init__(self):
+        self.selected_timer = "pomodoro"  # "pomodoro", "timer", "stoppwatch"
+        self.mode = "stopped"  # "stopped", "running", "paused"
         self.timer = QTimer()
         self.elapsed_time = QTime(0, 0, 0)
         self.target_time = QTime(0, 0, 0)
@@ -10,8 +12,7 @@ class TimeManagement:
         self.is_work_phase = True
         self.pomodoro_work_time = QTime(0, 25, 0)
         self.pomodoro_break_time = QTime(0, 5, 0)
-        self.selected_timer = "pomodoro"  # "pomodoro", "timer", "stoppwatch"
-        self.mode = "stopped"  # "stopped", "running", "paused"
+        self.productiv_minutes = 0
 
     def start_stopwatch(self):
         # Safely disconnect to avoid conflicts
@@ -85,6 +86,8 @@ class TimeManagement:
         """Decrement the stopwatches elapsed time."""
         self.elapsed_time = self.elapsed_time.addSecs(1)
         print(f"Time elapsed: {self.elapsed_time.toString("hh:mm:ss")}")  # Debug message
+        if self.elapsed_time.second() == 0:  # 1 minute passed
+            self.productiv_minutes += 1
 
     def decrement_time(self):
         """Decrement the timer's target time."""
@@ -99,6 +102,8 @@ class TimeManagement:
         else:
             self.target_time = self.target_time.addSecs(-1)
             print(f"Time left: {self.target_time.toString("hh:mm:ss")}")  # Debug message
+            if self.target_time.second() == 0:  # 1 minute passed
+                self.productiv_minutes += 1
 
     def pause(self):
         """Pause the timer or stopwatch."""
@@ -121,6 +126,6 @@ class TimeManagement:
             return self.target_time.toString("hh:mm:ss")
         return self.elapsed_time.toString("hh:mm:ss") if self.mode != "stopped" else "00:00:00"
     
-    def set_mode(self, timer_mode):
+    def set_timer_mode(self, timer_mode):
         self.selected_timer = timer_mode
         self.stop()  # Reset the timer/stopwatch
