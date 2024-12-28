@@ -394,8 +394,8 @@ class MainWindow(QMainWindow):
             self.clock_label.setText("00:00:00")
             self.pause_button.setText("-")
             if self.time_manager.timer_elapsed:
+                # TODO insert timer-elapsed-action here
                 pass
-            # TODO insert timer-elapsed-action here
 
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
