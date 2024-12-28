@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, \
-    QPlainTextEdit
+from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
+    QLineEdit, QPlainTextEdit
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from productivitywindow.timemanagement import TimeManagement
+from pointsystem.pointsystem import PointSystem
 from common.constants import WIDTH, HEIGHT, \
     PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
     IMGDIR_GUI_FLOWER_MEADOW
@@ -34,6 +35,10 @@ class CircleWithNumber(QWidget):
         font.setPointSize(14)
         painter.setFont(font)
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.number))
+    
+    def update_widget(self, new_number):
+        self.number = new_number
+        self.update()
 
 
 class MainWindow(QMainWindow):
@@ -42,13 +47,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("ProductivityGarden")
         self.setGeometry(100, 100, WIDTH, HEIGHT)
 
-        # Set up UI
+        # Setups
+        self.point_system = PointSystem()
         self.time_manager = TimeManagement()
         self.setup_ui()
 
         # Timer for updating the clock label
         self.update_timer = QTimer(self)
-        self.update_timer.timeout.connect(self.update_display)
+        self.update_timer.timeout.connect(self.update_app)
         self.update_timer.start(200)
 
     def setup_ui(self):
@@ -262,9 +268,9 @@ class MainWindow(QMainWindow):
         # Horizontal layout for circle and text
         circle_and_text_layout_av = QHBoxLayout()
         
-        # Circle with number
-        circle_av = CircleWithNumber(12, 60, 60)
-        circle_and_text_layout_av.addWidget(circle_av)
+        # Circle with number (currently available points)
+        self.circle_av = CircleWithNumber(self.point_system.get_points(), 60, 60)
+        circle_and_text_layout_av.addWidget(self.circle_av)
         
         # Label next to the circle
         circle_text_label = QLabel("available")
@@ -277,8 +283,9 @@ class MainWindow(QMainWindow):
         # Horizontal layout for circle and text
         circle_and_text_layout_tot = QHBoxLayout()
         
-        circle_tot = CircleWithNumber(42, 60, 60)
-        circle_and_text_layout_tot.addWidget(circle_tot)
+        # Circle with number (total points collected)
+        self.circle_tot = CircleWithNumber(self.point_system.get_points(), 60, 60)
+        circle_and_text_layout_tot.addWidget(self.circle_tot)
         
         # Label next to the circle
         circle_text_label = QLabel("total")
@@ -287,27 +294,6 @@ class MainWindow(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
-
-    def update_display(self):
-        """Update the displayed time on the GUI."""
-        self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
-        
-        if self.time_manager.mode == "running":
-            if self.time_manager.selected_timer == "pomodoro":
-                phase = "Work" if self.time_manager.is_work_phase else "Break"
-                self.clock_label.setText(f"{phase}: {self.time_manager.target_time.toString('hh:mm:ss')}")
-            elif self.time_manager.selected_timer == "stopwatch":
-                self.clock_label.setText(self.time_manager.elapsed_time.toString("hh:mm:ss"))
-            elif self.time_manager.selected_timer == "timer":
-                self.clock_label.setText(self.time_manager.target_time.toString("hh:mm:ss"))
-            self.pause_button.setText("Pause")
-        elif self.time_manager.mode == "paused":
-            self.pause_button.setText("Resume")
-        elif self.time_manager.mode == "stopped":
-            self.clock_label.setText("00:00:00")
-            self.pause_button.setText("-")
-            if self.time_manager.timer_elapsed:
-                pass
 
     def start_time(self):
         """Start the stopwatch or timer."""
@@ -353,29 +339,69 @@ class MainWindow(QMainWindow):
         self.time_manager.stop()
     
     def toggle_mode(self):
-        """Switch between Stopwatch and Timer."""
+        """Switch between Pomodoro-Timer, Timer and Stopwatch."""
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "pomodoro":
-            self.time_manager.set_mode("stopwatch")
+            self.time_manager.set_timer_mode("timer")
+        elif self.time_manager.selected_timer == "timer":
+            self.time_manager.set_timer_mode("stopwatch")
+        elif self.time_manager.selected_timer == "stopwatch":
+            self.time_manager.set_timer_mode("pomodoro")
+        
+    def update_gui(self):
+        """Update the displayed time on the GUI."""
+        self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
+        
+        # Point Overview
+        self.circle_av.update_widget(self.point_system.get_points())
+        self.circle_tot.update_widget(self.point_system.get_points())
+        
+        # Time Management
+        if self.time_manager.selected_timer == "pomodoro":
             self.mode_toggle_button.setText("Switch to Timer")
             self.timer_input_field.setVisible(False)
             self.pomodoro_work_input.setVisible(True)
             self.pomodoro_work_input_label.setVisible(True)
             self.pomodoro_break_input.setVisible(True)
             self.pomodoro_break_input_label.setVisible(True)
-        elif self.time_manager.selected_timer == "timer":
-            self.time_manager.set_mode("pomodoro")
+            if self.time_manager.mode == "running":
+                phase = "Work" if self.time_manager.is_work_phase else "Break"
+                self.clock_label.setText(f"{phase}: {self.time_manager.target_time.toString('hh:mm:ss')}")
+        if self.time_manager.selected_timer == "timer":
             self.mode_toggle_button.setText("Switch to Stopwatch")
-            self.timer_input_field.setVisible(False)
-            self.pomodoro_work_input.setVisible(False)
-            self.pomodoro_work_input_label.setVisible(False)
-            self.pomodoro_break_input.setVisible(False)
-            self.pomodoro_break_input_label.setVisible(False)
-        elif self.time_manager.selected_timer == "stopwatch":
-            self.time_manager.set_mode("timer")
-            self.mode_toggle_button.setText("Switch to Pomodoro")
             self.timer_input_field.setVisible(True)
             self.pomodoro_work_input.setVisible(False)
             self.pomodoro_work_input_label.setVisible(False)
             self.pomodoro_break_input.setVisible(False)
             self.pomodoro_break_input_label.setVisible(False)
+            if self.time_manager.mode == "running":
+                self.clock_label.setText(self.time_manager.target_time.toString("hh:mm:ss"))
+        elif self.time_manager.selected_timer == "stopwatch":
+            self.mode_toggle_button.setText("Switch to Pomodoro")
+            self.timer_input_field.setVisible(False)
+            self.pomodoro_work_input.setVisible(False)
+            self.pomodoro_work_input_label.setVisible(False)
+            self.pomodoro_break_input.setVisible(False)
+            self.pomodoro_break_input_label.setVisible(False)
+            if self.time_manager.mode == "running":
+                self.clock_label.setText(self.time_manager.elapsed_time.toString("hh:mm:ss"))
+        
+        if self.time_manager.mode == "running":
+            self.pause_button.setText("Pause")
+        elif self.time_manager.mode == "paused":
+            self.pause_button.setText("Resume")
+        elif self.time_manager.mode == "stopped":
+            self.clock_label.setText("00:00:00")
+            self.pause_button.setText("-")
+            if self.time_manager.timer_elapsed:
+                pass
+            # TODO insert timer-elapsed-action here
+
+    def sync_variables(self):
+        # get counter of productiv minutes from timemanagement
+        self.point_system.add_minutes(self.time_manager.productiv_minutes)
+        self.time_manager.productiv_minutes = 0  # reset counter after reading
+
+    def update_app(self):
+        self.sync_variables()
+        self.update_gui()
