@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         circle_and_text_layout_av = QHBoxLayout()
         
         # Circle with number (currently available points)
-        self.circle_av = CircleWithNumber(self.point_system.get_points(), 60, 60)
+        self.circle_av = CircleWithNumber(self.point_system.get_points()[1], 60, 60)
         circle_and_text_layout_av.addWidget(self.circle_av)
         
         # Label next to the circle
@@ -284,7 +284,7 @@ class MainWindow(QMainWindow):
         circle_and_text_layout_tot = QHBoxLayout()
         
         # Circle with number (total points collected)
-        self.circle_tot = CircleWithNumber(self.point_system.get_points(), 60, 60)
+        self.circle_tot = CircleWithNumber(self.point_system.get_points()[0], 60, 60)
         circle_and_text_layout_tot.addWidget(self.circle_tot)
         
         # Label next to the circle
@@ -353,8 +353,8 @@ class MainWindow(QMainWindow):
         self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
         
         # Point Overview
-        self.circle_av.update_widget(self.point_system.get_points())
-        self.circle_tot.update_widget(self.point_system.get_points())
+        self.circle_av.update_widget(self.point_system.get_points()[1])
+        self.circle_tot.update_widget(self.point_system.get_points()[0])
         
         # Time Management
         if self.time_manager.selected_timer == "pomodoro":
@@ -399,7 +399,7 @@ class MainWindow(QMainWindow):
 
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
-        self.point_system.add_minutes(self.time_manager.productiv_minutes)
+        self.point_system.add_points(self.time_manager.productiv_minutes//1)
         self.time_manager.productiv_minutes = 0  # reset counter after reading
 
     def update_app(self):
