@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBox
     QLineEdit, QPlainTextEdit
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
-from productivitywindow.timemanagement import TimeManagement
+from productivitysession.timemanagement import TimeManagement
 from pointsystem.pointsystem import PointSystem
 from common.constants import WIDTH, HEIGHT, \
     PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
@@ -128,78 +128,7 @@ class MainSession(QMainWindow):
         """Create the second column with a clock label and input field."""
         layout = QVBoxLayout()
 
-        # Display current timer mode
-        self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
-        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        self.timer_mode_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.timer_mode_label)
-        
-        # Digital clock
-        self.clock_label = QLabel("00:00:00")
-        self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.clock_label)
-        
-        # Buttons to control the various time functions
-        buttons_layout = QHBoxLayout()
-        start_button = self.create_button("Start", self.start_time)
-        buttons_layout.addWidget(start_button)
-
-        self.pause_button = self.create_button("-", self.pause_time)
-        buttons_layout.addWidget(self.pause_button)
-        
-        stop_button = self.create_button("Stop", self.stop_time)
-        stop_button.clicked.connect(self.stop_time)
-        buttons_layout.addWidget(stop_button)
-        
-        layout.addLayout(buttons_layout)
-        
-        # Input field for pomodoro #1
-        work_input_layout = QHBoxLayout()
-        self.pomodoro_work_input = QLineEdit()
-        self.pomodoro_work_input.setText("00:25:00")
-        self.pomodoro_work_input.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        self.pomodoro_work_input.setVisible(True)
-        work_input_layout.addWidget(self.pomodoro_work_input)
-        # Label next to the input box
-        self.pomodoro_work_input_label = QLabel("set work time ")
-        self.pomodoro_work_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        work_input_layout.addWidget(self.pomodoro_work_input_label)
-        layout.addLayout(work_input_layout)
-        # Input field for pomodoro #2
-        break_input_layout = QHBoxLayout()
-        self.pomodoro_break_input = QLineEdit()
-        self.pomodoro_break_input.setText("00:05:00")
-        self.pomodoro_break_input.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        self.pomodoro_break_input.setVisible(True)
-        break_input_layout.addWidget(self.pomodoro_break_input)
-        # Label next to the input box
-        self.pomodoro_break_input_label = QLabel("set break time")
-        self.pomodoro_break_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        break_input_layout.addWidget(self.pomodoro_break_input_label)
-        layout.addLayout(break_input_layout)
-        
-        # Input field for timer
-        self.timer_input_field = QLineEdit()
-        self.timer_input_field.setText("00:50:00")
-        self.timer_input_field.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        self.timer_input_field.setVisible(False)
-        layout.addWidget(self.timer_input_field)
-        
-        # Text element for errors
-        self.input_error_label = QLabel("")
-        self.input_error_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_RED_HEX}")
-        self.input_error_label.setVisible(False)
-        layout.addWidget(self.input_error_label)
-        
-        # Toggle button for stopwatch/timer
-        self.mode_toggle_button = self.create_button("Switch to Timer", self.toggle_mode)
-        layout.addWidget(self.mode_toggle_button)
+        self.draw_time_management_area(layout)
 
         # Add spacer to push content to the top
         layout.addStretch()
@@ -207,7 +136,7 @@ class MainSession(QMainWindow):
         # Input field for text
         self.text_box = QPlainTextEdit()
         self.text_box.setPlaceholderText("Enter your text here...")
-        self.text_box.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+        self.text_box.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
         font_metrics = self.text_box.fontMetrics()
         line_height = font_metrics.lineSpacing()
@@ -267,7 +196,7 @@ class MainSession(QMainWindow):
             button.clicked.connect(callback)
         return button
 
-    def draw_point_overview(self, layout):
+    def draw_point_overview(self, layout : QVBoxLayout):
         # Text Element
         points_label = QLabel("Points")
         points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
@@ -302,6 +231,80 @@ class MainSession(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
+
+    def draw_time_management_area(self, layout : QVBoxLayout):
+        # Display current timer mode
+        self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
+        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.timer_mode_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.timer_mode_label)
+        
+        # Digital clock
+        self.clock_label = QLabel("00:00:00")
+        self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.clock_label)
+        
+        # Buttons to control the various time functions
+        buttons_layout = QHBoxLayout()
+        start_button = self.create_button("Start", self.start_time)
+        buttons_layout.addWidget(start_button)
+
+        self.pause_button = self.create_button("-", self.pause_time)
+        buttons_layout.addWidget(self.pause_button)
+        
+        stop_button = self.create_button("Stop", self.stop_time)
+        stop_button.clicked.connect(self.stop_time)
+        buttons_layout.addWidget(stop_button)
+        
+        layout.addLayout(buttons_layout)
+        
+        # Input field for pomodoro #1
+        work_input_layout = QHBoxLayout()
+        self.pomodoro_work_input = QLineEdit()
+        self.pomodoro_work_input.setText("00:25:00")
+        self.pomodoro_work_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_work_input.setVisible(True)
+        work_input_layout.addWidget(self.pomodoro_work_input)
+        # Label next to the input box
+        self.pomodoro_work_input_label = QLabel("set work time ")
+        self.pomodoro_work_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        work_input_layout.addWidget(self.pomodoro_work_input_label)
+        layout.addLayout(work_input_layout)
+        # Input field for pomodoro #2
+        break_input_layout = QHBoxLayout()
+        self.pomodoro_break_input = QLineEdit()
+        self.pomodoro_break_input.setText("00:05:00")
+        self.pomodoro_break_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_break_input.setVisible(True)
+        break_input_layout.addWidget(self.pomodoro_break_input)
+        # Label next to the input box
+        self.pomodoro_break_input_label = QLabel("set break time")
+        self.pomodoro_break_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        break_input_layout.addWidget(self.pomodoro_break_input_label)
+        layout.addLayout(break_input_layout)
+        
+        # Input field for timer
+        self.timer_input_field = QLineEdit()
+        self.timer_input_field.setText("00:50:00")
+        self.timer_input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.timer_input_field.setVisible(False)
+        layout.addWidget(self.timer_input_field)
+        
+        # Text element for errors
+        self.input_error_label = QLabel("")
+        self.input_error_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_RED_HEX}")
+        self.input_error_label.setVisible(False)
+        layout.addWidget(self.input_error_label)
+        
+        # Toggle button for stopwatch/timer
+        self.mode_toggle_button = self.create_button("Switch to Timer", self.toggle_mode)
+        layout.addWidget(self.mode_toggle_button)
 
     def validate_timer_input(self, input_text):
         # Regular expression for hh:mm:ss format
