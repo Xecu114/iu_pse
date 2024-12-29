@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit
 from PyQt6.QtCore import Qt, QTimer
@@ -43,7 +44,7 @@ class CircleWithNumber(QWidget):
         self.update()
 
 
-class MainWindow(QMainWindow):
+class MainSession(QMainWindow):
     def __init__(self):
         super().__init__()
         self.data_filename = "data.json"
@@ -153,7 +154,7 @@ class MainWindow(QMainWindow):
         
         layout.addLayout(buttons_layout)
         
-        # Input field #1 for pomodoro
+        # Input field for pomodoro #1
         work_input_layout = QHBoxLayout()
         self.pomodoro_work_input = QLineEdit()
         self.pomodoro_work_input.setText("00:25:00")
@@ -167,7 +168,7 @@ class MainWindow(QMainWindow):
             f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         work_input_layout.addWidget(self.pomodoro_work_input_label)
         layout.addLayout(work_input_layout)
-        # Input field #2
+        # Input field for pomodoro #2
         break_input_layout = QHBoxLayout()
         self.pomodoro_break_input = QLineEdit()
         self.pomodoro_break_input.setText("00:05:00")
@@ -184,7 +185,7 @@ class MainWindow(QMainWindow):
         
         # Input field for timer
         self.timer_input_field = QLineEdit()
-        self.timer_input_field.setText("00:00:00")
+        self.timer_input_field.setText("00:50:00")
         self.timer_input_field.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
         self.timer_input_field.setVisible(False)
@@ -302,38 +303,54 @@ class MainWindow(QMainWindow):
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
 
+    def validate_timer_input(self, input_text):
+        # Regular expression for hh:mm:ss format
+        regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
+
+        if not re.match(regex, input_text):
+            self.show_error("Invalid Time Format Use hh:mm:ss.")
+            return False
+
+        # Split the time into hours, minutes, and seconds
+        hours, minutes, seconds = map(int, input_text.split(':'))
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+
+        # Check if the time is between 1 minute and 24 hours
+        if total_seconds < 60:
+            self.show_error("Time must be at least 1 minute.")
+            return False
+        elif total_seconds > 24 * 3600:
+            self.show_error("Time cannot exceed 24 hours.")
+            return False
+        return True
+    
+    def show_error(self, text):
+        """Show error on gui."""
+        self.input_error_label.setText(text)
+        self.input_error_label.setVisible(True)
+    
     def start_time(self):
         """Start the stopwatch or timer."""
         self.input_error_label.setVisible(False)  # reset error on gui
-        if self.time_manager.selected_timer == "pomodoro":
-            # Parse the input field for the work and break timer duration
-            work_text = self.pomodoro_work_input.text()
-            break_text = self.pomodoro_break_input.text()
-            try:
+        if self.time_manager.selected_timer == "stopwatch":
+            self.time_manager.start_stopwatch()
+        elif self.time_manager.selected_timer == "pomodoro":
+            if self.validate_timer_input(self.pomodoro_work_input.text()) and \
+               self.validate_timer_input(self.pomodoro_break_input.text()):
+                # Parse the input field for the work and break timer duration
+                work_text = self.pomodoro_work_input.text()
+                break_text = self.pomodoro_break_input.text()
                 wh, wm, ws = map(int, work_text.split(":"))
                 bh, bm, bs = map(int, break_text.split(":"))
                 self.time_manager.set_pomodoro_time(wh, wm, ws, bh, bm, bs)
                 self.time_manager.start_pomodoro()
-            except ValueError:
-                # show error on gui
-                self.input_error_label.setText("Invalid Time Format")
-                self.input_error_label.setVisible(True)
-                print(f"Error: Invalid time format provided for timer: \
-                    work: {work_text} break: {break_text}")  # Debug message
-        elif self.time_manager.selected_timer == "stopwatch":
-            self.time_manager.start_stopwatch()
         elif self.time_manager.selected_timer == "timer":
-            # Parse the input field for timer duration
-            time_text = self.timer_input_field.text()
-            try:
-                hours, minutes, seconds = map(int, time_text.split(":"))
-                self.time_manager.set_timer(hours, minutes, seconds)
+            if self.validate_timer_input(self.timer_input_field.text()):
+                # Parse the input field for timer duration
+                time_text = self.timer_input_field.text()
+                h, m, s = map(int, time_text.split(":"))
+                self.time_manager.set_timer(h, m, s)
                 self.time_manager.start_timer()
-            except ValueError:
-                # show error on gui
-                self.input_error_label.setText("Invalid Time Format")
-                self.input_error_label.setVisible(True)
-                print(f"Error: Invalid time format provided for timer: {time_text}")  # Debug message
 
     def pause_time(self):
         """Pause or resume the timer/stopwatch."""
