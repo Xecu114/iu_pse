@@ -166,4 +166,4 @@ cython_debug/
 .vscode/
 
 virtualgarden/gardens/
-data_pointsystem.json
+data.json
