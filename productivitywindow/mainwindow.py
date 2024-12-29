@@ -1,3 +1,5 @@
+import json
+import os
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit
 from PyQt6.QtCore import Qt, QTimer
@@ -44,14 +46,19 @@ class CircleWithNumber(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("ProductivityGarden")
-        self.setGeometry(100, 100, WIDTH, HEIGHT)
-
-        # Setups
+        self.data_filename = "data.json"
+        
+        # Create class instances
         self.point_system = PointSystem()
         self.time_manager = TimeManagement()
+        
+        # UI
+        self.setWindowTitle("ProductivityGarden")
+        self.setGeometry(100, 100, WIDTH, HEIGHT)
         self.setup_ui()
-
+        
+        self.load_data()
+        
         # Timer for updating the clock label
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.update_app)
@@ -197,14 +204,14 @@ class MainWindow(QMainWindow):
         layout.addStretch()
         
         # Input field for text
-        text_box = QPlainTextEdit()
-        text_box.setPlaceholderText("Enter your text here...")
-        text_box.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+        self.text_box = QPlainTextEdit()
+        self.text_box.setPlaceholderText("Enter your text here...")
+        self.text_box.setStyleSheet(f"font-size: 12px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        font_metrics = text_box.fontMetrics()
+        font_metrics = self.text_box.fontMetrics()
         line_height = font_metrics.lineSpacing()
-        text_box.setFixedHeight(8 * line_height + 10)
-        layout.addWidget(text_box)
+        self.text_box.setFixedHeight(8 * line_height + 10)
+        layout.addWidget(self.text_box)
 
         container = QWidget()
         container.setLayout(layout)
@@ -327,7 +334,7 @@ class MainWindow(QMainWindow):
                 self.input_error_label.setText("Invalid Time Format")
                 self.input_error_label.setVisible(True)
                 print(f"Error: Invalid time format provided for timer: {time_text}")  # Debug message
-        
+
     def pause_time(self):
         """Pause or resume the timer/stopwatch."""
         if self.time_manager.mode == "running":
@@ -405,3 +412,32 @@ class MainWindow(QMainWindow):
     def update_app(self):
         self.sync_variables()
         self.update_gui()
+        self.save_data()
+        
+    def save_data(self):
+        total_points, available_points = self.point_system.get_points()
+        pomodoro_work_input = self.pomodoro_work_input.text()
+        pomodoro_break_input = self.pomodoro_break_input.text()
+        timer_input_field = self.timer_input_field.text()
+        text_box = self.text_box.toPlainText()
+        data = {
+            "total_points": total_points,
+            "available_points": available_points,
+            "pomodoro_work_input": pomodoro_work_input,
+            "pomodoro_break_input": pomodoro_break_input,
+            "timer_input_field": timer_input_field,
+            "text_box": text_box
+            }
+        with open(self.data_filename, "w") as file:
+            json.dump(data, file)
+
+    def load_data(self):
+        if not os.path.exists(self.data_filename):
+            self.save_data()
+        with open(self.data_filename, "r") as file:
+            data = json.load(file)
+            self.point_system.set_points(data["total_points"], data["available_points"])
+            self.pomodoro_work_input.setText(data["pomodoro_work_input"])
+            self.pomodoro_break_input.setText(data["pomodoro_break_input"])
+            self.timer_input_field.setText(data["timer_input_field"])
+            self.text_box.setPlainText(data["text_box"])
