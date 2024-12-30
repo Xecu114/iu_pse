@@ -75,7 +75,3 @@ class TestMainSession(unittest.TestCase):
         self.assertEqual(new_session.pomodoro_break_input.text(), "00:10:00")
         self.assertEqual(new_session.timer_input_field.text(), "01:00:00")
         self.assertEqual(new_session.text_box.toPlainText(), "Test text")
-
-
-if __name__ == '__main__':
-    unittest.main()

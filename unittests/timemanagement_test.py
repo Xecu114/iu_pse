@@ -88,7 +88,3 @@ class TestTimeManagement(unittest.TestCase):
         self.tm.set_timer_mode("timer")
         self.assertEqual(self.tm.selected_timer, "timer")
         self.assertEqual(self.tm.mode, "stopped")
-
-
-if __name__ == '__main__':
-    unittest.main()
