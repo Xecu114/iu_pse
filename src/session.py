@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBox
     QLineEdit, QPlainTextEdit
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
-from productivitysession.timemanagement import TimeManagement
-from pointsystem.pointsystem import PointSystem
+from src.timemanagement import TimeManagement
+from src.pointssystem import PointsSystem
 # from main_vg import main
 from common.constants import WIDTH, HEIGHT, \
     PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
@@ -51,7 +51,7 @@ class MainSession(QMainWindow):
         self.data_filename = "data.json"
         
         # Create class instances
-        self.point_system = PointSystem()
+        self.point_system = PointsSystem()
         self.time_manager = TimeManagement()
         
         # UI

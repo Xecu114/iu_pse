@@ -1,6 +1,6 @@
 import unittest
 from PyQt6.QtWidgets import QApplication
-from productivitysession.session import MainSession
+from src.session import MainSession
 from common.constants import WIDTH, HEIGHT
 
 

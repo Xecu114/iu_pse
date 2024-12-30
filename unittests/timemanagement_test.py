@@ -1,6 +1,6 @@
 import unittest
 from PyQt6.QtCore import QTime
-from productivitysession.timemanagement import TimeManagement
+from src.timemanagement import TimeManagement
 
 
 class TestTimeManagement(unittest.TestCase):
