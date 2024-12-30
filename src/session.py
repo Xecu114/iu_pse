@@ -2,11 +2,12 @@ import json
 import os
 import re
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
-    QLineEdit, QPlainTextEdit
-from PyQt6.QtCore import Qt, QTimer
+    QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
+from PyQt6.QtCore import Qt, QTimer, QDate
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from src.timemanagement import TimeManagement
 from src.pointssystem import PointsSystem
+from src.projectmanagement import ProjectManagement
 # from main_vg import main
 from common.constants import WIDTH, HEIGHT, \
     PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
@@ -53,6 +54,7 @@ class MainSession(QMainWindow):
         # Create class instances
         self.point_system = PointsSystem()
         self.time_manager = TimeManagement()
+        self.current_project = ProjectManagement("Project 1", "test", "study", QDate.currentDate(), QDate.currentDate())
         
         # UI
         self.setWindowTitle("ProductivityGarden")
@@ -155,11 +157,9 @@ class MainSession(QMainWindow):
         """Create the third column with a projects label."""
         layout = QVBoxLayout()
 
-        # Text "Projects"
-        projects_label = QLabel("Projects")
-        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
-        layout.addWidget(projects_label)
-
+        # Create project overview
+        self.draw_project_overview(layout)
+        
         # Add spacer to push content to the top
         layout.addStretch()
 
@@ -309,6 +309,66 @@ class MainSession(QMainWindow):
         self.mode_toggle_button = self.create_button("Switch to Timer", self.toggle_mode)
         layout.addWidget(self.mode_toggle_button)
 
+    def draw_project_overview(self, layout : QVBoxLayout):
+        # Text "Projects"
+        projects_label = QLabel("Projects")
+        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        layout.addWidget(projects_label)
+        
+        # Drop-Down menu for projects
+        projects_dropdown = QComboBox()
+        projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        projects_dropdown.addItem(self.current_project.name)
+        layout.addWidget(projects_dropdown)
+        
+        # Button to add a new project and one to delete the selected project
+        buttons_layout = QHBoxLayout()
+        add_button = self.create_button("Add", self.add_new_project())
+        buttons_layout.addWidget(add_button)
+        del_button = self.create_button("Del", self.del_selected_project())
+        buttons_layout.addWidget(del_button)
+        layout.addLayout(buttons_layout)
+        
+        # Tracked time for the selected project (Circle with number)
+        circle_and_text_layout = QHBoxLayout()
+        self.circle_project_time = CircleWithNumber(self.current_project.get_time(), 60, 60)
+        circle_and_text_layout.addWidget(self.circle_project_time)
+        
+        # Label next to the circle
+        circle_text_label = QLabel("total time tracked (min)")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_and_text_layout.addWidget(circle_text_label)
+        
+        # Add the horizontal layout to the main layout
+        layout.addLayout(circle_and_text_layout)
+        
+        # Date input for the project start date
+        start_date_layout = QHBoxLayout()
+        self.project_start_date_label = QLabel("Start Date: ")
+        self.project_start_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.project_start_date_edit = QDateEdit(self)
+        self.project_start_date_edit.setCalendarPopup(True)  # Enable the calendar popup
+        self.project_start_date_edit.setDate(self.current_project.start_date)  # Set default date
+        self.project_start_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
+            color: {PASTEL_OCEANBAY_HEX}; border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        start_date_layout.addWidget(self.project_start_date_label)
+        start_date_layout.addWidget(self.project_start_date_edit)
+        layout.addLayout(start_date_layout)
+        
+        # Date input for the project end date
+        end_date_layout = QHBoxLayout()
+        self.project_end_date_label = QLabel("End Date: ")
+        self.project_end_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.project_end_date_edit = QDateEdit(self)
+        self.project_end_date_edit.setCalendarPopup(True)  # Enable the calendar popup
+        self.project_end_date_edit.setDate(self.current_project.end_date)  # Set default date
+        self.project_end_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
+            color: {PASTEL_OCEANBAY_HEX}; border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        end_date_layout.addWidget(self.project_end_date_label)
+        end_date_layout.addWidget(self.project_end_date_edit)
+        layout.addLayout(end_date_layout)
+
     def validate_timer_input(self, input_text):
         # Regular expression for hh:mm:ss format
         regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
@@ -377,7 +437,13 @@ class MainSession(QMainWindow):
             self.time_manager.set_timer_mode("stopwatch")
         elif self.time_manager.selected_timer == "stopwatch":
             self.time_manager.set_timer_mode("pomodoro")
-        
+    
+    def add_new_project(self):
+        pass
+    
+    def del_selected_project(self):
+        pass
+    
     def update_gui(self):
         """Update the displayed time on the GUI."""
         self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
@@ -426,18 +492,28 @@ class MainSession(QMainWindow):
             if self.time_manager.timer_elapsed:
                 # TODO insert timer-elapsed-action here
                 pass
+        
+        # Project Overview
+        self.circle_project_time.update_widget(self.current_project.get_time())
 
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
         self.point_system.add_points(self.time_manager.productiv_minutes//1)
-        self.time_manager.productiv_minutes = 0  # reset counter after reading
+        
+        # Project Management
+        self.current_project.add_time(self.time_manager.productiv_minutes)
+        self.current_project.start_date = self.project_start_date_edit.date()
+        self.current_project.end_date = self.project_end_date_edit.date()
+        
+        self.time_manager.productiv_minutes = 0  # reset local counter after reading
 
     def update_app(self):
         self.sync_variables()
-        self.update_gui()
         self.save_data()
+        self.update_gui()
         
     def save_data(self):
+        # save points and settings to json file
         total_points, available_points = self.point_system.get_points()
         pomodoro_work_input = self.pomodoro_work_input.text()
         pomodoro_break_input = self.pomodoro_break_input.text()
@@ -453,6 +529,9 @@ class MainSession(QMainWindow):
             }
         with open(self.data_filename, "w") as file:
             json.dump(data, file)
+        
+        # save project data to sql
+        self.current_project.update_data_in_sql()
 
     def load_data(self):
         if not os.path.exists(self.data_filename):
