@@ -2,8 +2,6 @@ class PointSystem:
     def __init__(self):
         self.total_points = 0
         self.available_points = 0
-        # self.filename = "data_pointsystem.json"
-        # self.load_data()
 
     def add_points(self, points: int):
         """Add points to the total and available points."""
