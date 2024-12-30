@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from productivitysession.timemanagement import TimeManagement
 from pointsystem.pointsystem import PointSystem
+# from main_vg import main
 from common.constants import WIDTH, HEIGHT, \
     PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
     IMGDIR_GUI_FLOWER_MEADOW
@@ -59,6 +60,7 @@ class MainSession(QMainWindow):
         self.setup_ui()
         
         self.load_data()
+        self.update_app()
         
         # Timer for updating the clock label
         self.update_timer = QTimer(self)
@@ -105,6 +107,7 @@ class MainSession(QMainWindow):
         self.draw_point_overview(layout)
         
         # create button to the gardens
+        # button = self.create_button("TO THE GARDENS", main)
         button = self.create_button("TO THE GARDENS")
         layout.addWidget(button)
         
@@ -192,7 +195,7 @@ class MainSession(QMainWindow):
                 color: {PASTEL_OCEANBAY_HEX};
             }}
         """)
-        if callback:
+        if callback is not None:
             button.clicked.connect(callback)
         return button
 
