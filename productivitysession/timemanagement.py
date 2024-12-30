@@ -36,7 +36,6 @@ class TimeManagement:
     def start_timer(self):
         """Start the timer countdown."""
         print("Starting timer...")  # Debug message
-        self.mode = "running"
         # Safely disconnect to avoid conflicts
         try:
             self.timer.timeout.disconnect(self.increment_time)  # For stopwatch
@@ -49,6 +48,7 @@ class TimeManagement:
             pass  # Ignore if no connection exists
         self.timer.timeout.connect(self.decrement_time)
         self.timer.start(1000)
+        self.mode = "running"
 
     def set_pomodoro_time(self, wh=0, wm=25, ws=0, bh=0, bm=5, bs=0):
         """Set the time based on the current phase and manual input."""

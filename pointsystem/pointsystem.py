@@ -1,5 +1,3 @@
-
-
 class PointSystem:
     def __init__(self):
         self.total_points = 0
@@ -23,16 +21,3 @@ class PointSystem:
     def get_points(self):
         """Return the current points."""
         return self.total_points, self.available_points
-    
-    # def save_data(self):
-    #     data = {"total_points": self.total_points, "available_points": self.available_points}
-    #     with open(self.filename, "w") as file:
-    #         json.dump(data, file)
-    
-    # def load_data(self):
-    #     if not os.path.exists(self.filename):
-    #         self.save_data()
-    #     with open(self.filename, "r") as file:
-    #         data = json.load(file)
-    #     self.total_points = data["total_points"]
-    #     self.available_points = data["available_points"]
