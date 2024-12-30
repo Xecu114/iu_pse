@@ -1,11 +1,11 @@
 import unittest
-from pointsystem.pointsystem import PointSystem
+from src.pointssystem import PointsSystem
 
 
 class TestPointSystem(unittest.TestCase):
 
     def setUp(self):
-        self.ps = PointSystem()
+        self.ps = PointsSystem()
 
     def test_initial_state(self):
         self.assertEqual(self.ps.total_points, 0)

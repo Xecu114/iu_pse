@@ -1,4 +1,4 @@
-class PointSystem:
+class PointsSystem:
     def __init__(self):
         self.total_points = 0
         self.available_points = 0
