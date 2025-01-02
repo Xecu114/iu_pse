@@ -167,3 +167,4 @@ cython_debug/
 
 virtualgarden/gardens/
 data.json
+*.db

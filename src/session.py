@@ -3,7 +3,7 @@ import os
 import re
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
-from PyQt6.QtCore import Qt, QTimer, QDate
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
 from src.timemanagement import TimeManagement
 from src.pointssystem import PointsSystem
@@ -54,14 +54,14 @@ class MainSession(QMainWindow):
         # Create class instances
         self.point_system = PointsSystem()
         self.time_manager = TimeManagement()
-        self.current_project = ProjectManagement("Project 1", "test", "study", QDate.currentDate(), QDate.currentDate())
+        self.current_project = ProjectManagement()
         
         # UI
         self.setWindowTitle("ProductivityGarden")
         self.setGeometry(100, 100, WIDTH, HEIGHT)
         self.setup_ui()
         
-        self.load_data()
+        self.load_json_data()
         self.update_app()
         
         # Timer for updating the clock label
@@ -316,16 +316,18 @@ class MainSession(QMainWindow):
         layout.addWidget(projects_label)
         
         # Drop-Down menu for projects
-        projects_dropdown = QComboBox()
-        projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+        self.projects_dropdown = QComboBox()
+        self.projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
-        projects_dropdown.addItem(self.current_project.name)
-        layout.addWidget(projects_dropdown)
+        self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list())
+        layout.addWidget(self.projects_dropdown)
         
         # Button to add a new project and one to delete the selected project
         buttons_layout = QHBoxLayout()
         add_button = self.create_button("Add", self.add_new_project())
         buttons_layout.addWidget(add_button)
+        edit_button = self.create_button("Edit", self.edit_selected_project())
+        buttons_layout.addWidget(edit_button)
         del_button = self.create_button("Del", self.del_selected_project())
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
@@ -439,10 +441,15 @@ class MainSession(QMainWindow):
             self.time_manager.set_timer_mode("pomodoro")
     
     def add_new_project(self):
+        self.current_project.add_project()
+        # TODO: popup to change Name, Description, Type ...
+    
+    def edit_selected_project(self):
+        # TODO: popup to change Name, Description, Type ...
         pass
     
     def del_selected_project(self):
-        pass
+        self.current_project.delete_project()
     
     def update_gui(self):
         """Update the displayed time on the GUI."""
@@ -495,6 +502,7 @@ class MainSession(QMainWindow):
         
         # Project Overview
         self.circle_project_time.update_widget(self.current_project.get_time())
+        # self.projects_dropdown.update()
 
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
@@ -509,10 +517,12 @@ class MainSession(QMainWindow):
 
     def update_app(self):
         self.sync_variables()
-        self.save_data()
+        self.save_json_data()
+        # save project data to sql
+        self.current_project.update_data_in_sql()
         self.update_gui()
         
-    def save_data(self):
+    def save_json_data(self):
         # save points and settings to json file
         total_points, available_points = self.point_system.get_points()
         pomodoro_work_input = self.pomodoro_work_input.text()
@@ -530,16 +540,14 @@ class MainSession(QMainWindow):
         with open(self.data_filename, "w") as file:
             json.dump(data, file)
         
-        # save project data to sql
-        self.current_project.update_data_in_sql()
-
-    def load_data(self):
+    def load_json_data(self):
         if not os.path.exists(self.data_filename):
-            self.save_data()
-        with open(self.data_filename, "r") as file:
-            data = json.load(file)
-            self.point_system.set_points(data["total_points"], data["available_points"])
-            self.pomodoro_work_input.setText(data["pomodoro_work_input"])
-            self.pomodoro_break_input.setText(data["pomodoro_break_input"])
-            self.timer_input_field.setText(data["timer_input_field"])
-            self.text_box.setPlainText(data["text_box"])
+            self.save_json_data()  # create file with default values
+        else:
+            with open(self.data_filename, "r") as file:
+                data = json.load(file)
+                self.point_system.set_points(data["total_points"], data["available_points"])
+                self.pomodoro_work_input.setText(data["pomodoro_work_input"])
+                self.pomodoro_break_input.setText(data["pomodoro_break_input"])
+                self.timer_input_field.setText(data["timer_input_field"])
+                self.text_box.setPlainText(data["text_box"])
