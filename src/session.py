@@ -320,15 +320,17 @@ class MainSession(QMainWindow):
         self.projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
             border: 1px solid {PASTEL_OCEANBAY_HEX};")
         self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list())
+        self.projects_dropdown.currentIndexChanged.connect(self.select_project_from_dropdown)
         layout.addWidget(self.projects_dropdown)
         
         # Button to add a new project and one to delete the selected project
         buttons_layout = QHBoxLayout()
-        add_button = self.create_button("Add", self.add_new_project())
+        add_button = self.create_button("Add", self.add_new_project)
         buttons_layout.addWidget(add_button)
-        edit_button = self.create_button("Edit", self.edit_selected_project())
-        buttons_layout.addWidget(edit_button)
-        del_button = self.create_button("Del", self.del_selected_project())
+        # TODO: delete ?
+        # edit_button = self.create_button("Edit", self.edit_selected_project)
+        # buttons_layout.addWidget(edit_button)
+        del_button = self.create_button("Del", self.del_selected_project)
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
         
@@ -337,6 +339,9 @@ class MainSession(QMainWindow):
         self.circle_project_time = CircleWithNumber(self.current_project.get_time(), 60, 60)
         circle_and_text_layout.addWidget(self.circle_project_time)
         
+        # Add edit info area
+        self.draw_project_info_area(layout)
+        
         # Label next to the circle
         circle_text_label = QLabel("total time tracked (min)")
         circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
@@ -344,10 +349,58 @@ class MainSession(QMainWindow):
         
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout)
+
+    def draw_project_info_area(self, layout : QVBoxLayout):
+        # Input field for name of the project
+        name_input_layout = QHBoxLayout()
+        self.pr_name_input = QLineEdit()
+        self.pr_name_input.setText(self.current_project.name)
+        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_name_input.setVisible(True)
+        name_input_layout.addWidget(self.pr_name_input)
+        # Label next to the input box
+        self.pr_name_input_label = QLabel("Name")
+        self.pr_name_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        name_input_layout.addWidget(self.pr_name_input_label)
+        layout.addLayout(name_input_layout)
+        # connect to update dropdown menu
+        self.pr_name_input.textChanged.connect(self.update_projects_dropdown_menu)
+        
+        # Input field for description of the project
+        description_input_layout = QHBoxLayout()
+        self.pr_description_input = QLineEdit()
+        self.pr_description_input.setText(self.current_project.description)
+        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_description_input.setVisible(True)
+        description_input_layout.addWidget(self.pr_description_input)
+        # Label next to the input box
+        self.pr_description_input_label = QLabel("Description")
+        self.pr_description_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        description_input_layout.addWidget(self.pr_description_input_label)
+        layout.addLayout(description_input_layout)
+        
+        # Input field for type of the project
+        type_input_layout = QHBoxLayout()
+        self.pr_type_input = QLineEdit()
+        self.pr_type_input.setText(self.current_project.type)
+        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
+            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_type_input.setVisible(True)
+        type_input_layout.addWidget(self.pr_type_input)
+        # Label next to the input box
+        self.pr_type_input_label = QLabel("Category")
+        self.pr_type_input_label.setStyleSheet(
+            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        type_input_layout.addWidget(self.pr_type_input_label)
+        layout.addLayout(type_input_layout)
         
         # Date input for the project start date
         start_date_layout = QHBoxLayout()
-        self.project_start_date_label = QLabel("Start Date: ")
+        self.project_start_date_label = QLabel("Start Date")
         self.project_start_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         self.project_start_date_edit = QDateEdit(self)
         self.project_start_date_edit.setCalendarPopup(True)  # Enable the calendar popup
@@ -360,7 +413,7 @@ class MainSession(QMainWindow):
         
         # Date input for the project end date
         end_date_layout = QHBoxLayout()
-        self.project_end_date_label = QLabel("End Date: ")
+        self.project_end_date_label = QLabel("End Date")
         self.project_end_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
         self.project_end_date_edit = QDateEdit(self)
         self.project_end_date_edit.setCalendarPopup(True)  # Enable the calendar popup
@@ -442,15 +495,30 @@ class MainSession(QMainWindow):
     
     def add_new_project(self):
         self.current_project.add_project()
-        # TODO: popup to change Name, Description, Type ...
+        self.projects_dropdown.addItem(self.current_project.name)
+        self.projects_dropdown.setCurrentIndex(self.projects_dropdown.count()-1)
     
-    def edit_selected_project(self):
-        # TODO: popup to change Name, Description, Type ...
-        pass
+    # def edit_selected_project(self):
+    #     # TODO: open/close fields to change Name, Description, Type ...
+    #     pass
     
     def del_selected_project(self):
         self.current_project.delete_project()
+        self.projects_dropdown.removeItem(self.projects_dropdown.currentIndex())
+        self.projects_dropdown.setCurrentIndex(0)
     
+    def select_project_from_dropdown(self):
+        self.current_project.id = ProjectManagement.get_id_by_name(self.projects_dropdown.currentText())
+        self.current_project.load_data_from_sql()
+        self.pr_name_input.setText(self.current_project.name)
+        self.pr_description_input.setText(self.current_project.description)
+        self.pr_type_input.setText(self.current_project.type)
+        self.project_start_date_edit.setDate(self.current_project.start_date)
+        self.project_end_date_edit.setDate(self.current_project.end_date)
+
+    def update_projects_dropdown_menu(self):
+        self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
+ 
     def update_gui(self):
         """Update the displayed time on the GUI."""
         self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
@@ -502,8 +570,7 @@ class MainSession(QMainWindow):
         
         # Project Overview
         self.circle_project_time.update_widget(self.current_project.get_time())
-        # self.projects_dropdown.update()
-
+    
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
         self.point_system.add_points(self.time_manager.productiv_minutes//1)
@@ -514,14 +581,17 @@ class MainSession(QMainWindow):
         self.current_project.end_date = self.project_end_date_edit.date()
         
         self.time_manager.productiv_minutes = 0  # reset local counter after reading
+        
+        self.current_project.name = self.pr_name_input.text()
+        self.current_project.description = self.pr_description_input.text()
+        self.current_project.type = self.pr_type_input.text()
 
     def update_app(self):
         self.sync_variables()
         self.save_json_data()
-        # save project data to sql
         self.current_project.update_data_in_sql()
         self.update_gui()
-        
+    
     def save_json_data(self):
         # save points and settings to json file
         total_points, available_points = self.point_system.get_points()

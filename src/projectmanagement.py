@@ -10,15 +10,7 @@ class ProjectManagement:
             self.id = ProjectManagement.get_id_by_name(project_names[0])
             self.load_data_from_sql()
         else:
-            self.id = random.randint(1000, 9999)
-            self.name = ""
-            self.description = ""
-            self.type = ""
-            self.time_tracked = 0
-            self.start_date = QDate.currentDate()
-            self.end_date = QDate.currentDate()
-            self.status = "active"
-            self.save_data_to_sql()
+            self.add_project()
     
     def add_time(self, minutes: int):
         self.time_tracked += minutes
@@ -119,7 +111,7 @@ class ProjectManagement:
         return names
     
     @staticmethod
-    def get_id_by_name(name_to_check):
+    def get_id_by_name(name_to_check: str):
         """Check if a project name exists and return its ID if found."""
         with sqlite3.connect("projects.db") as conn:
             cursor = conn.cursor()
