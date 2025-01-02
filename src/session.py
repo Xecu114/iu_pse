@@ -10,16 +10,18 @@ from src.pointssystem import PointsSystem
 from src.projectmanagement import ProjectManagement
 # from main_vg import main
 from common.constants import WIDTH, HEIGHT, \
-    PASTEL_BEIGE_HEX, PASTEL_OCEANBAY_HEX, PASTEL_OCEANBAY_RGB, PASTEL_ROSE_RGB, PASTEL_ROSE_HEX, PASTEL_RED_HEX, \
+    COLOR_BEIGE_HEX, COLOR_OCEANBAY_HEX, COLOR_OCEANBAY_RGB, COLOR_ROSE_RGB, COLOR_ROSE_HEX, COLOR_RED_HEX, \
     IMGDIR_GUI_FLOWER_MEADOW
 
 
 class CircleWithNumber(QWidget):
-    def __init__(self, number, w, h, parent=None):
+    def __init__(self, number, w, h, color_circle: tuple, color_number: tuple, parent=None):
         super().__init__(parent)
         self.number = number
         self.w = w
         self.h = h
+        self.color_circle = color_circle
+        self.color_number = color_number
         self.setFixedSize(w, h)
 
     def paintEvent(self, event: QPaintEvent):   # type: ignore
@@ -27,13 +29,13 @@ class CircleWithNumber(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Draw circle
-        r, g, b = PASTEL_ROSE_RGB
+        r, g, b = self.color_circle
         painter.setBrush(QColor(r, g, b))
         painter.setPen(QColor(r, g, b))
         painter.drawEllipse((self.w//10), (self.h//10), (self.w-(self.w//5)), (self.h-(self.h//5)))
 
         # Draw number in the circle
-        r, g, b = PASTEL_OCEANBAY_RGB
+        r, g, b = self.color_number
         painter.setPen(QColor(r, g, b))
         font = painter.font()
         font.setBold(True)
@@ -97,7 +99,7 @@ class MainSession(QMainWindow):
         # Set central widget
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
-        central_widget.setStyleSheet(f"background-color: {PASTEL_BEIGE_HEX};")
+        central_widget.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         self.setCentralWidget(central_widget)
 
     def create_first_column(self):
@@ -110,7 +112,7 @@ class MainSession(QMainWindow):
         
         # create button to the gardens
         # button = self.create_button("TO THE GARDENS", main)
-        button = self.create_button("TO THE GARDENS")
+        button = self.create_button("TO THE GARDENS", COLOR_OCEANBAY_HEX)
         layout.addWidget(button)
         
         # Image
@@ -126,7 +128,7 @@ class MainSession(QMainWindow):
 
         container = QWidget()
         container.setLayout(layout)
-        container.setStyleSheet(f"background-color: {PASTEL_BEIGE_HEX};")
+        container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
     def create_second_column(self):
@@ -141,8 +143,8 @@ class MainSession(QMainWindow):
         # Input field for text
         self.text_box = QPlainTextEdit()
         self.text_box.setPlaceholderText("Enter your text here...")
-        self.text_box.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.text_box.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         font_metrics = self.text_box.fontMetrics()
         line_height = font_metrics.lineSpacing()
         self.text_box.setFixedHeight(8 * line_height + 10)
@@ -150,7 +152,7 @@ class MainSession(QMainWindow):
 
         container = QWidget()
         container.setLayout(layout)
-        container.setStyleSheet(f"background-color: {PASTEL_BEIGE_HEX};")
+        container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
     def create_third_column(self):
@@ -165,34 +167,34 @@ class MainSession(QMainWindow):
 
         container = QWidget()
         container.setLayout(layout)
-        container.setStyleSheet(f"background-color: {PASTEL_BEIGE_HEX};")
+        container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
     def create_separator(self):
         """Create a separator line."""
         separator = QWidget()
         separator.setFixedWidth(1)
-        separator.setStyleSheet(f"background-color: {PASTEL_OCEANBAY_HEX};")
+        separator.setStyleSheet(f"background-color: {COLOR_OCEANBAY_HEX};")
         return separator
 
-    def create_button(self, text, callback=None):
+    def create_button(self, text, main_color: str, callback=None):
         button = QPushButton(text)
         button.setStyleSheet(f"""
             QPushButton{{
                 font-size: 16px;
                 font-weight: bold;
                 padding: 10px;
-                color: {PASTEL_OCEANBAY_HEX};
-                border: 1px solid {PASTEL_OCEANBAY_HEX};
+                color: {main_color};
+                border: 1px solid {main_color};
                 background-color: transparent;
             }}
             QPushButton:hover {{
-                background-color: {PASTEL_ROSE_HEX};
-                color: {PASTEL_OCEANBAY_HEX};
+                background-color: {COLOR_ROSE_HEX};
+                color: {main_color};
             }}
             QPushButton:pressed {{
-                background-color: {PASTEL_OCEANBAY_HEX};
-                color: {PASTEL_OCEANBAY_HEX};
+                background-color: {main_color};
+                color: {main_color};
             }}
         """)
         if callback is not None:
@@ -201,20 +203,22 @@ class MainSession(QMainWindow):
 
     def draw_point_overview(self, layout : QVBoxLayout):
         # Text Element
-        points_label = QLabel("Points")
-        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        points_label = QLabel("POINTS")
+        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
+        points_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(points_label)
 
         # Horizontal layout for circle and text
         circle_and_text_layout_av = QHBoxLayout()
         
         # Circle with number (currently available points)
-        self.circle_av = CircleWithNumber(self.point_system.get_points()[1], 60, 60)
+        self.circle_av = CircleWithNumber(self.point_system.get_points()[1], 60, 60,
+                                          COLOR_ROSE_RGB, COLOR_OCEANBAY_RGB)
         circle_and_text_layout_av.addWidget(self.circle_av)
         
         # Label next to the circle
         circle_text_label = QLabel("available")
-        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         circle_and_text_layout_av.addWidget(circle_text_label)
         
         # Add the horizontal layout to the main layout
@@ -224,12 +228,13 @@ class MainSession(QMainWindow):
         circle_and_text_layout_tot = QHBoxLayout()
         
         # Circle with number (total points collected)
-        self.circle_tot = CircleWithNumber(self.point_system.get_points()[0], 60, 60)
+        self.circle_tot = CircleWithNumber(self.point_system.get_points()[0], 60, 60,
+                                           COLOR_ROSE_RGB, COLOR_OCEANBAY_RGB)
         circle_and_text_layout_tot.addWidget(self.circle_tot)
         
         # Label next to the circle
         circle_text_label = QLabel("total")
-        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         circle_and_text_layout_tot.addWidget(circle_text_label)
         
         # Add the horizontal layout to the main layout
@@ -238,25 +243,25 @@ class MainSession(QMainWindow):
     def draw_time_management_area(self, layout : QVBoxLayout):
         # Display current timer mode
         self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
-        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.timer_mode_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.timer_mode_label)
         
         # Digital clock
         self.clock_label = QLabel("00:00:00")
-        self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.clock_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.clock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.clock_label)
         
         # Buttons to control the various time functions
         buttons_layout = QHBoxLayout()
-        start_button = self.create_button("Start", self.start_time)
+        start_button = self.create_button("Start", COLOR_OCEANBAY_HEX, self.start_time)
         buttons_layout.addWidget(start_button)
 
-        self.pause_button = self.create_button("-", self.pause_time)
+        self.pause_button = self.create_button("-", COLOR_OCEANBAY_HEX, self.pause_time)
         buttons_layout.addWidget(self.pause_button)
         
-        stop_button = self.create_button("Stop", self.stop_time)
+        stop_button = self.create_button("Stop", COLOR_OCEANBAY_HEX, self.stop_time)
         stop_button.clicked.connect(self.stop_time)
         buttons_layout.addWidget(stop_button)
         
@@ -266,77 +271,79 @@ class MainSession(QMainWindow):
         work_input_layout = QHBoxLayout()
         self.pomodoro_work_input = QLineEdit()
         self.pomodoro_work_input.setText("00:25:00")
-        self.pomodoro_work_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_work_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.pomodoro_work_input.setVisible(True)
         work_input_layout.addWidget(self.pomodoro_work_input)
         # Label next to the input box
         self.pomodoro_work_input_label = QLabel("set work time ")
         self.pomodoro_work_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+            f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         work_input_layout.addWidget(self.pomodoro_work_input_label)
         layout.addLayout(work_input_layout)
         # Input field for pomodoro #2
         break_input_layout = QHBoxLayout()
         self.pomodoro_break_input = QLineEdit()
         self.pomodoro_break_input.setText("00:05:00")
-        self.pomodoro_break_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pomodoro_break_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.pomodoro_break_input.setVisible(True)
         break_input_layout.addWidget(self.pomodoro_break_input)
         # Label next to the input box
         self.pomodoro_break_input_label = QLabel("set break time")
         self.pomodoro_break_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+            f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         break_input_layout.addWidget(self.pomodoro_break_input_label)
         layout.addLayout(break_input_layout)
         
         # Input field for timer
         self.timer_input_field = QLineEdit()
         self.timer_input_field.setText("00:50:00")
-        self.timer_input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.timer_input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.timer_input_field.setVisible(False)
         layout.addWidget(self.timer_input_field)
         
         # Text element for errors
         self.input_error_label = QLabel("")
-        self.input_error_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_RED_HEX}")
+        self.input_error_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_RED_HEX}")
         self.input_error_label.setVisible(False)
         layout.addWidget(self.input_error_label)
         
         # Toggle button for stopwatch/timer
-        self.mode_toggle_button = self.create_button("Switch to Timer", self.toggle_mode)
+        self.mode_toggle_button = self.create_button("Switch to Timer", COLOR_OCEANBAY_HEX, self.toggle_mode)
         layout.addWidget(self.mode_toggle_button)
 
     def draw_project_overview(self, layout : QVBoxLayout):
         # Text "Projects"
-        projects_label = QLabel("Projects")
-        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        projects_label = QLabel("PROJECTS")
+        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
+        projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(projects_label)
         
         # Drop-Down menu for projects
         self.projects_dropdown = QComboBox()
-        self.projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list())
         self.projects_dropdown.currentIndexChanged.connect(self.select_project_from_dropdown)
         layout.addWidget(self.projects_dropdown)
         
         # Button to add a new project and one to delete the selected project
         buttons_layout = QHBoxLayout()
-        add_button = self.create_button("Add", self.add_new_project)
+        add_button = self.create_button("Add", COLOR_OCEANBAY_HEX, self.add_new_project)
         buttons_layout.addWidget(add_button)
         # TODO: delete ?
         # edit_button = self.create_button("Edit", self.edit_selected_project)
         # buttons_layout.addWidget(edit_button)
-        del_button = self.create_button("Del", self.del_selected_project)
+        del_button = self.create_button("Del", COLOR_OCEANBAY_HEX, self.del_selected_project)
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
         
         # Tracked time for the selected project (Circle with number)
         circle_and_text_layout = QHBoxLayout()
-        self.circle_project_time = CircleWithNumber(self.current_project.get_time(), 60, 60)
+        self.circle_project_time = CircleWithNumber(self.current_project.get_time(), 60, 60,
+                                                    COLOR_ROSE_RGB, COLOR_OCEANBAY_RGB)
         circle_and_text_layout.addWidget(self.circle_project_time)
         
         # Add edit info area
@@ -344,7 +351,7 @@ class MainSession(QMainWindow):
         
         # Label next to the circle
         circle_text_label = QLabel("total time tracked (min)")
-        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         circle_and_text_layout.addWidget(circle_text_label)
         
         # Add the horizontal layout to the main layout
@@ -355,14 +362,14 @@ class MainSession(QMainWindow):
         name_input_layout = QHBoxLayout()
         self.pr_name_input = QLineEdit()
         self.pr_name_input.setText(self.current_project.name)
-        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.pr_name_input.setVisible(True)
         name_input_layout.addWidget(self.pr_name_input)
         # Label next to the input box
         self.pr_name_input_label = QLabel("Name")
         self.pr_name_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+            f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         name_input_layout.addWidget(self.pr_name_input_label)
         layout.addLayout(name_input_layout)
         # connect to update dropdown menu
@@ -372,14 +379,14 @@ class MainSession(QMainWindow):
         description_input_layout = QHBoxLayout()
         self.pr_description_input = QLineEdit()
         self.pr_description_input.setText(self.current_project.description)
-        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.pr_description_input.setVisible(True)
         description_input_layout.addWidget(self.pr_description_input)
         # Label next to the input box
         self.pr_description_input_label = QLabel("Description")
         self.pr_description_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+            f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         description_input_layout.addWidget(self.pr_description_input_label)
         layout.addLayout(description_input_layout)
         
@@ -387,26 +394,26 @@ class MainSession(QMainWindow):
         type_input_layout = QHBoxLayout()
         self.pr_type_input = QLineEdit()
         self.pr_type_input.setText(self.current_project.type)
-        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {PASTEL_OCEANBAY_HEX};\
-            border: 1px solid {PASTEL_OCEANBAY_HEX};")
+        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.pr_type_input.setVisible(True)
         type_input_layout.addWidget(self.pr_type_input)
         # Label next to the input box
         self.pr_type_input_label = QLabel("Category")
         self.pr_type_input_label.setStyleSheet(
-            f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+            f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         type_input_layout.addWidget(self.pr_type_input_label)
         layout.addLayout(type_input_layout)
         
         # Date input for the project start date
         start_date_layout = QHBoxLayout()
         self.project_start_date_label = QLabel("Start Date")
-        self.project_start_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.project_start_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.project_start_date_edit = QDateEdit(self)
         self.project_start_date_edit.setCalendarPopup(True)  # Enable the calendar popup
         self.project_start_date_edit.setDate(self.current_project.start_date)  # Set default date
         self.project_start_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
-            color: {PASTEL_OCEANBAY_HEX}; border: 1px solid {PASTEL_OCEANBAY_HEX};")
+            color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
         start_date_layout.addWidget(self.project_start_date_label)
         start_date_layout.addWidget(self.project_start_date_edit)
         layout.addLayout(start_date_layout)
@@ -414,12 +421,12 @@ class MainSession(QMainWindow):
         # Date input for the project end date
         end_date_layout = QHBoxLayout()
         self.project_end_date_label = QLabel("End Date")
-        self.project_end_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {PASTEL_OCEANBAY_HEX}")
+        self.project_end_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.project_end_date_edit = QDateEdit(self)
         self.project_end_date_edit.setCalendarPopup(True)  # Enable the calendar popup
         self.project_end_date_edit.setDate(self.current_project.end_date)  # Set default date
         self.project_end_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
-            color: {PASTEL_OCEANBAY_HEX}; border: 1px solid {PASTEL_OCEANBAY_HEX};")
+            color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
