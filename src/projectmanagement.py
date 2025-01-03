@@ -122,14 +122,14 @@ class ProjectManagement:
             ''', (name_to_check,))
             row = cursor.fetchone()
         return row[0] if row else None
-    
+
     @staticmethod
-    def get_total_time_tracked():
-        """Retrieve the total time tracked across all projects."""
+    def get_projects_time_tracked_list():
+        """Retrieve all project time_tracked from the database and return a list."""
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT SUM(time_tracked) FROM projects
+                SELECT time_tracked FROM projects
             ''')
-            total_time = cursor.fetchone()[0]
-        return total_time
+            time_tracked_list = [row[0] for row in cursor.fetchall()]
+        return time_tracked_list

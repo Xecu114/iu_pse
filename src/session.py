@@ -4,7 +4,7 @@ import re
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
+from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent, QBrush
 from PyQt6.QtCharts import QChart, QChartView, QPieSeries
 from src.timemanagement import TimeManagement
 from src.pointssystem import PointsSystem
@@ -49,6 +49,39 @@ class CircleWithNumber(QWidget):
         self.update()
 
 
+class ProjectsOverviewPieChart:
+    def __init__(self):
+        # Initialisierung der Diagrammkomponenten
+        self.chart = QChart()
+        self.chart.setTitle("")
+        self.chart.setTheme(QChart.ChartTheme.ChartThemeBrownSand)
+        self.chart.setBackgroundBrush(QBrush(QColor(COLOR_BEIGE_HEX)))
+
+        self.series = QPieSeries()
+        self.series.setPieSize(1)
+        self.series.setHoleSize(0.5)
+
+        self.chart.addSeries(self.series)
+
+        self.chart_view = QChartView(self.chart)
+        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.chart_view.setMinimumSize(WIDTH // 4, HEIGHT // 3)
+
+        # self.layout = QVBoxLayout()  # Erstelle einen Layout-Container
+        # self.layout.addWidget(self.chart_view)
+
+        self.update_data()
+
+    def update_data(self):
+        """Aktualisiere das Diagramm mit den neuesten Daten."""
+        project_names = ProjectManagement.get_projects_name_list()
+        time_tracked_list = ProjectManagement.get_projects_time_tracked_list()
+
+        self.series.clear()  # Vorhandene Daten entfernen
+        for i, name in enumerate(project_names):
+            self.series.append(name, time_tracked_list[i])
+
+
 class MainSession(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -65,12 +98,17 @@ class MainSession(QMainWindow):
         self.setup_ui()
         
         self.load_json_data()
-        self.update_app()
+        self.update_high_frequency()
+        self.update_low_frequency()
         
         # Timer for updating the clock label
-        self.update_timer = QTimer(self)
-        self.update_timer.timeout.connect(self.update_app)
-        self.update_timer.start(200)
+        self.update_timer_high_frequency = QTimer(self)
+        self.update_timer_high_frequency.timeout.connect(self.update_high_frequency)
+        self.update_timer_high_frequency.start(250)
+        
+        self.update_timer_low_frequency = QTimer(self)
+        self.update_timer_low_frequency.timeout.connect(self.update_low_frequency)
+        self.update_timer_low_frequency.start(2000)
 
     def setup_ui(self):
         """Setup the main UI layout and widgets."""
@@ -316,6 +354,8 @@ class MainSession(QMainWindow):
         layout.addWidget(self.mode_toggle_button)
 
     def draw_project_overview(self, layout : QVBoxLayout):
+        layout = layout
+        
         # Text "Projects"
         projects_label = QLabel("PROJECTS")
         projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
@@ -324,8 +364,8 @@ class MainSession(QMainWindow):
         
         # Drop-Down menu for projects
         self.projects_dropdown = QComboBox()
-        self.projects_dropdown.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.projects_dropdown.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
+            color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list())
         self.projects_dropdown.currentIndexChanged.connect(self.select_project_from_dropdown)
         layout.addWidget(self.projects_dropdown)
@@ -337,7 +377,7 @@ class MainSession(QMainWindow):
         # TODO: delete ?
         # edit_button = self.create_button("Edit", self.edit_selected_project)
         # buttons_layout.addWidget(edit_button)
-        del_button = self.create_button("Del", COLOR_OCEANBAY_HEX, self.del_selected_project)
+        del_button = self.create_button("Delete", COLOR_OCEANBAY_HEX, self.del_selected_project)
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
         
@@ -350,62 +390,67 @@ class MainSession(QMainWindow):
                                                     COLOR_ROSE_RGB, COLOR_OCEANBAY_RGB)
         circle_and_text_layout.addWidget(self.circle_project_time)
         # Label next to the circle
-        circle_text_label = QLabel("total time tracked (min)")
+        circle_text_label = QLabel("time tracked (min)")
         circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         circle_and_text_layout.addWidget(circle_text_label)
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout)
         
         # Add pie chart for project time distribution
-        self.draw_project_pie_chart(layout)
+        self.projects_pie_chart = ProjectsOverviewPieChart()
+        layout.addWidget(self.projects_pie_chart.chart_view)
 
     def draw_project_info_area(self, layout : QVBoxLayout):
-        # Input field for name of the project
-        name_input_layout = QHBoxLayout()
-        self.pr_name_input = QLineEdit()
-        self.pr_name_input.setText(self.current_project.name)
-        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
-        self.pr_name_input.setVisible(True)
-        name_input_layout.addWidget(self.pr_name_input)
+        # build layout for input fields
+        inputh_layout = QHBoxLayout()
+        inputv1_layout = QVBoxLayout()
+        inputv2_layout = QVBoxLayout()
         # Label next to the input box
         self.pr_name_input_label = QLabel("Name")
         self.pr_name_input_label.setStyleSheet(
             f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
-        name_input_layout.addWidget(self.pr_name_input_label)
-        layout.addLayout(name_input_layout)
+        # Input field for name of the project
+        self.pr_name_input = QLineEdit()
+        self.pr_name_input.setText(self.current_project.name)
+        self.pr_name_input.setPlaceholderText("Physics")
+        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pr_name_input.setVisible(True)
+        inputv1_layout.addWidget(self.pr_name_input_label)
+        inputv2_layout.addWidget(self.pr_name_input)
         # connect to update dropdown menu
         self.pr_name_input.textChanged.connect(self.update_projects_dropdown_menu)
         
-        # Input field for description of the project
-        description_input_layout = QHBoxLayout()
-        self.pr_description_input = QLineEdit()
-        self.pr_description_input.setText(self.current_project.description)
-        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
-        self.pr_description_input.setVisible(True)
-        description_input_layout.addWidget(self.pr_description_input)
         # Label next to the input box
         self.pr_description_input_label = QLabel("Description")
         self.pr_description_input_label.setStyleSheet(
             f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
-        description_input_layout.addWidget(self.pr_description_input_label)
-        layout.addLayout(description_input_layout)
-        
-        # Input field for type of the project
-        type_input_layout = QHBoxLayout()
-        self.pr_type_input = QLineEdit()
-        self.pr_type_input.setText(self.current_project.type)
-        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+        # Input field for description of the project
+        self.pr_description_input = QLineEdit()
+        self.pr_description_input.setText(self.current_project.description)
+        self.pr_description_input.setPlaceholderText("Physics class")
+        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
             border: 1px solid {COLOR_OCEANBAY_HEX};")
-        self.pr_type_input.setVisible(True)
-        type_input_layout.addWidget(self.pr_type_input)
+        self.pr_description_input.setVisible(True)
+        inputv1_layout.addWidget(self.pr_description_input_label)
+        inputv2_layout.addWidget(self.pr_description_input)
+        
         # Label next to the input box
         self.pr_type_input_label = QLabel("Category")
         self.pr_type_input_label.setStyleSheet(
             f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
-        type_input_layout.addWidget(self.pr_type_input_label)
-        layout.addLayout(type_input_layout)
+        # Input field for type of the project
+        self.pr_type_input = QLineEdit()
+        self.pr_type_input.setText(self.current_project.type)
+        self.pr_type_input.setPlaceholderText("Study")
+        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
+            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pr_type_input.setVisible(True)
+        inputv1_layout.addWidget(self.pr_type_input_label)
+        inputv2_layout.addWidget(self.pr_type_input)
+        inputh_layout.addLayout(inputv1_layout)
+        inputh_layout.addLayout(inputv2_layout)
+        layout.addLayout(inputh_layout)
         
         # Date input for the project start date
         start_date_layout = QHBoxLayout()
@@ -432,25 +477,6 @@ class MainSession(QMainWindow):
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
-    
-    def draw_project_pie_chart(self, layout : QVBoxLayout):
-        """Draw a pie chart to show the project time distribution."""
-        # Create a chart
-        chart = QChart()
-        chart.setTitle("Project Time Distribution")
-        
-        # Create a series of data
-        series = QPieSeries()
-        series.append(self.current_project.name, self.current_project.time_tracked)
-        series.append("Total", self.current_project.get_total_time_tracked())
-        
-        # Add the series to the chart
-        chart.addSeries(series)
-        
-        # Create a chart view
-        chart_view = QChartView(chart)
-        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
-        layout.addWidget(chart_view)
     
     def show_error(self, text):
         """Show error on gui."""
@@ -529,10 +555,6 @@ class MainSession(QMainWindow):
     def update_gui(self):
         """Update the GUI."""
         
-        # Point Overview
-        self.circle_av.update_widget(self.point_system.get_points()[1])
-        self.circle_tot.update_widget(self.point_system.get_points()[0])
-        
         # Time Management
         self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
         if self.time_manager.selected_timer == "pomodoro":
@@ -571,9 +593,6 @@ class MainSession(QMainWindow):
         elif self.time_manager.mode == "stopped":
             self.clock_label.setText("00:00:00")
             self.pause_button.setText("-")
-        
-        # Project Overview
-        self.circle_project_time.update_widget(self.current_project.get_time())
     
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
@@ -590,11 +609,22 @@ class MainSession(QMainWindow):
         self.current_project.description = self.pr_description_input.text()
         self.current_project.type = self.pr_type_input.text()
 
-    def update_app(self):
+    def update_high_frequency(self):
         self.sync_variables()
+        self.update_gui()
+    
+    def update_low_frequency(self):
+        # save data
         self.save_json_data()
         self.current_project.update_data_in_sql()
-        self.update_gui()
+        
+        # update Point Overview
+        self.circle_av.update_widget(self.point_system.get_points()[1])
+        self.circle_tot.update_widget(self.point_system.get_points()[0])
+        
+        # update Project Overview
+        self.circle_project_time.update_widget(self.current_project.get_time())
+        self.projects_pie_chart.update_data()
     
     def save_json_data(self):
         # save points and settings to json file
