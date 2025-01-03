@@ -64,10 +64,10 @@ class TestMainSession(unittest.TestCase):
         self.main_session.pomodoro_break_input.setText("00:10:00")
         self.main_session.timer_input_field.setText("01:00:00")
         self.main_session.text_box.setPlainText("Test text")
-        self.main_session.save_data()
+        self.main_session.save_json_data()
 
         new_session = MainSession()
-        new_session.load_data()
+        new_session.load_json_data()
         total_points, available_points = new_session.point_system.get_points()
         self.assertEqual(total_points, 10)
         self.assertEqual(available_points, 5)
