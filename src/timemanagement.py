@@ -32,7 +32,7 @@ class TimeManagement:
 
     def start_timer(self):
         """Start the timer countdown."""
-        print("Starting timer...")  # Debug message
+        # print("Starting timer...")  # Debug message
         # Safely disconnect to avoid conflicts
         try:
             self.timer.timeout.disconnect(self.increment_time)  # For stopwatch
@@ -96,7 +96,7 @@ class TimeManagement:
         if remaining_seconds < 0:
             remaining_seconds = 0
         self.remaining_time = QTime(0, 0, 0).addSecs(remaining_seconds)
-        print(f"Remaining time: {self.remaining_time.toString('hh:mm:ss')}")
+        # print(f"Remaining time: {self.remaining_time.toString('hh:mm:ss')}")
 
     def pause(self):
         """Pause the timer or stopwatch."""
