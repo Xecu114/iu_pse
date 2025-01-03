@@ -8,7 +8,7 @@ class TimeManagement:
         self.timer = QTimer()
         self.elapsed_time = QTime(0, 0, 0)
         self.target_time = QTime(0, 0, 0)
-        self.timer_elapsed = False  # True if Timer is elapsed
+        self.remaining_time = QTime(0, 0, 0)
         self.is_work_phase = True
         self.pomodoro_work_time = QTime(0, 25, 0)
         self.pomodoro_break_time = QTime(0, 5, 0)
@@ -20,10 +20,6 @@ class TimeManagement:
             self.timer.timeout.disconnect(self.increment_time)  # For stopwatch
         except TypeError:
             pass  # Ignore if no connection exists
-        try:
-            self.timer.timeout.disconnect(self.decrement_time)  # For timer
-        except TypeError:
-            pass  # Ignore if no connection exists
         self.timer.timeout.connect(self.increment_time)
         self.timer.start(1000)
         self.mode = "running"
@@ -32,6 +28,7 @@ class TimeManagement:
         """Set the timer's target time."""
         self.target_time = QTime(hours, minutes, seconds)
         self.elapsed_time = QTime(0, 0, 0)  # Reset elapsed time for consistency
+        self.remaining_time = self.target_time
 
     def start_timer(self):
         """Start the timer countdown."""
@@ -41,12 +38,7 @@ class TimeManagement:
             self.timer.timeout.disconnect(self.increment_time)  # For stopwatch
         except TypeError:
             pass  # Ignore if no connection exists
-
-        try:
-            self.timer.timeout.disconnect(self.decrement_time)  # For timer
-        except TypeError:
-            pass  # Ignore if no connection exists
-        self.timer.timeout.connect(self.decrement_time)
+        self.timer.timeout.connect(self.increment_time)
         self.timer.start(1000)
         self.mode = "running"
 
@@ -83,27 +75,28 @@ class TimeManagement:
         self.start_timer()
 
     def increment_time(self):
-        """Decrement the stopwatches elapsed time."""
+        """Increment the stopwatches elapsed time."""
         self.elapsed_time = self.elapsed_time.addSecs(1)
         print(f"Time elapsed: {self.elapsed_time.toString("hh:mm:ss")}")  # Debug message
         if self.elapsed_time.second() == 0:  # 1 minute passed
             self.productiv_minutes += 1
+        if self.selected_timer != "stopwatch":
+            self.update_remaining_time()
+            if self.remaining_time == QTime(0, 0, 0):
+                if self.selected_timer == "pomodoro":
+                    self.switch_pomodoro_phase()
+                elif self.selected_timer == "timer":
+                    self.timer.stop()
+                    self.mode = "stopped"
+                    print("Timer reached zero!")
 
-    def decrement_time(self):
-        """Decrement the timer's target time."""
-        if self.target_time == QTime(0, 0, 0):
-            if self.selected_timer == "pomodoro":
-                self.switch_pomodoro_phase()
-            else:
-                self.timer.stop()
-                self.mode = "stopped"
-                self.timer_elapsed = True
-                print("Timer reached zero!")  # Debug message
-        else:
-            self.target_time = self.target_time.addSecs(-1)
-            print(f"Time left: {self.target_time.toString("hh:mm:ss")}")  # Debug message
-            if self.target_time.second() == 0:  # 1 minute passed
-                self.productiv_minutes += 1
+    def update_remaining_time(self):
+        remaining_seconds = self.target_time.msecsSinceStartOfDay() // 1000 - \
+                            self.elapsed_time.msecsSinceStartOfDay() // 1000
+        if remaining_seconds < 0:
+            remaining_seconds = 0
+        self.remaining_time = QTime(0, 0, 0).addSecs(remaining_seconds)
+        print(f"Remaining time: {self.remaining_time.toString('hh:mm:ss')}")
 
     def pause(self):
         """Pause the timer or stopwatch."""
@@ -118,13 +111,14 @@ class TimeManagement:
     def stop(self):
         self.timer.stop()
         self.elapsed_time = QTime(0, 0, 0)
-        self.target_time = QTime(0, 0, 0)
+        self.remaining_timem = QTime(0, 0, 0)
         self.mode = "stopped"
 
-    def get_display_time(self):
-        if self.mode == "stopped" and self.target_time != QTime(0, 0, 0):
-            return self.target_time.toString("hh:mm:ss")
-        return self.elapsed_time.toString("hh:mm:ss") if self.mode != "stopped" else "00:00:00"
+    # TODO delete?
+    # def get_display_time(self):
+    #     if self.mode == "stopped" and self.remaining_time != QTime(0, 0, 0):
+    #         return self.remaining_time.toString("hh:mm:ss")
+    #     return self.elapsed_time.toString("hh:mm:ss") if self.mode != "stopped" else "00:00:00"
     
     def set_timer_mode(self, timer_mode):
         self.selected_timer = timer_mode
