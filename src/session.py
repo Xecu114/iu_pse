@@ -430,27 +430,6 @@ class MainSession(QMainWindow):
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
-
-    def validate_timer_input(self, input_text):
-        # Regular expression for hh:mm:ss format
-        regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
-
-        if not re.match(regex, input_text):
-            self.show_error("Invalid Time Format Use hh:mm:ss.")
-            return False
-
-        # Split the time into hours, minutes, and seconds
-        hours, minutes, seconds = map(int, input_text.split(':'))
-        total_seconds = hours * 3600 + minutes * 60 + seconds
-
-        # Check if the time is between 1 minute and 24 hours
-        if total_seconds < 60:
-            self.show_error("Time must be at least 1 minute.")
-            return False
-        elif total_seconds > 24 * 3600:
-            self.show_error("Time cannot exceed 24 hours.")
-            return False
-        return True
     
     def show_error(self, text):
         """Show error on gui."""
@@ -527,14 +506,14 @@ class MainSession(QMainWindow):
         self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
  
     def update_gui(self):
-        """Update the displayed time on the GUI."""
-        self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
+        """Update the GUI."""
         
         # Point Overview
         self.circle_av.update_widget(self.point_system.get_points()[1])
         self.circle_tot.update_widget(self.point_system.get_points()[0])
         
         # Time Management
+        self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
         if self.time_manager.selected_timer == "pomodoro":
             self.mode_toggle_button.setText("Switch to Timer")
             self.timer_input_field.setVisible(False)
@@ -544,7 +523,7 @@ class MainSession(QMainWindow):
             self.pomodoro_break_input_label.setVisible(True)
             if self.time_manager.mode == "running":
                 phase = "Work" if self.time_manager.is_work_phase else "Break"
-                self.clock_label.setText(f"{phase}: {self.time_manager.target_time.toString('hh:mm:ss')}")
+                self.clock_label.setText(f"{phase}: {self.time_manager.remaining_time.toString('hh:mm:ss')}")
         if self.time_manager.selected_timer == "timer":
             self.mode_toggle_button.setText("Switch to Stopwatch")
             self.timer_input_field.setVisible(True)
@@ -553,7 +532,7 @@ class MainSession(QMainWindow):
             self.pomodoro_break_input.setVisible(False)
             self.pomodoro_break_input_label.setVisible(False)
             if self.time_manager.mode == "running":
-                self.clock_label.setText(self.time_manager.target_time.toString("hh:mm:ss"))
+                self.clock_label.setText(self.time_manager.remaining_time.toString("hh:mm:ss"))
         elif self.time_manager.selected_timer == "stopwatch":
             self.mode_toggle_button.setText("Switch to Pomodoro")
             self.timer_input_field.setVisible(False)
@@ -571,9 +550,6 @@ class MainSession(QMainWindow):
         elif self.time_manager.mode == "stopped":
             self.clock_label.setText("00:00:00")
             self.pause_button.setText("-")
-            if self.time_manager.timer_elapsed:
-                # TODO insert timer-elapsed-action here
-                pass
         
         # Project Overview
         self.circle_project_time.update_widget(self.current_project.get_time())
@@ -628,3 +604,24 @@ class MainSession(QMainWindow):
                 self.pomodoro_break_input.setText(data["pomodoro_break_input"])
                 self.timer_input_field.setText(data["timer_input_field"])
                 self.text_box.setPlainText(data["text_box"])
+
+    def validate_timer_input(self, input_text):
+        # Regular expression for hh:mm:ss format
+        regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
+
+        if not re.match(regex, input_text):
+            self.show_error("Invalid Time Format Use hh:mm:ss.")
+            return False
+
+        # Split the time into hours, minutes, and seconds
+        hours, minutes, seconds = map(int, input_text.split(':'))
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+
+        # Check if the time is between 1 minute and 24 hours
+        if total_seconds < 60:
+            self.show_error("Time must be at least 1 minute.")
+            return False
+        elif total_seconds > 24 * 3600:
+            self.show_error("Time cannot exceed 24 hours.")
+            return False
+        return True
