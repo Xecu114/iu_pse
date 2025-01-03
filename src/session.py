@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBox
     QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter, QColor, QPaintEvent
+from PyQt6.QtCharts import QChart, QChartView, QPieSeries
 from src.timemanagement import TimeManagement
 from src.pointssystem import PointsSystem
 from src.projectmanagement import ProjectManagement
@@ -340,22 +341,23 @@ class MainSession(QMainWindow):
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
         
+        # Add edit info area
+        self.draw_project_info_area(layout)
+        
         # Tracked time for the selected project (Circle with number)
         circle_and_text_layout = QHBoxLayout()
         self.circle_project_time = CircleWithNumber(self.current_project.get_time(), 60, 60,
                                                     COLOR_ROSE_RGB, COLOR_OCEANBAY_RGB)
         circle_and_text_layout.addWidget(self.circle_project_time)
-        
-        # Add edit info area
-        self.draw_project_info_area(layout)
-        
         # Label next to the circle
         circle_text_label = QLabel("total time tracked (min)")
         circle_text_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         circle_and_text_layout.addWidget(circle_text_label)
-        
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout)
+        
+        # Add pie chart for project time distribution
+        self.draw_project_pie_chart(layout)
 
     def draw_project_info_area(self, layout : QVBoxLayout):
         # Input field for name of the project
@@ -430,6 +432,25 @@ class MainSession(QMainWindow):
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
+    
+    def draw_project_pie_chart(self, layout : QVBoxLayout):
+        """Draw a pie chart to show the project time distribution."""
+        # Create a chart
+        chart = QChart()
+        chart.setTitle("Project Time Distribution")
+        
+        # Create a series of data
+        series = QPieSeries()
+        series.append(self.current_project.name, self.current_project.time_tracked)
+        series.append("Total", self.current_project.get_total_time_tracked())
+        
+        # Add the series to the chart
+        chart.addSeries(series)
+        
+        # Create a chart view
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        layout.addWidget(chart_view)
     
     def show_error(self, text):
         """Show error on gui."""
