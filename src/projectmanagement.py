@@ -2,6 +2,8 @@ import random
 import sqlite3
 from PyQt6.QtCore import QDate
 
+DB_FILE = "projects.db"
+
 
 class ProjectManagement:
     def __init__(self, ):
@@ -20,7 +22,7 @@ class ProjectManagement:
 
     def save_data_to_sql(self):
         """Create the current project data in the database."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             # Create table if it does not exist
             cursor.execute('''
@@ -46,7 +48,7 @@ class ProjectManagement:
     
     def update_data_in_sql(self):
         """Update the current project data in the database."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 UPDATE projects
@@ -59,7 +61,7 @@ class ProjectManagement:
     
     def load_data_from_sql(self):
         """Load the current project data from the database."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 SELECT name, description, type, time_tracked, start_date, end_date, status
@@ -89,7 +91,7 @@ class ProjectManagement:
 
     def delete_project(self):
         """Delete a project from the database by its name."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 DELETE FROM projects WHERE name = ?
@@ -102,7 +104,7 @@ class ProjectManagement:
     @staticmethod
     def get_projects_name_list():
         """Retrieve all project names from the database and return a list of names."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 SELECT name FROM projects
@@ -113,10 +115,21 @@ class ProjectManagement:
     @staticmethod
     def get_id_by_name(name_to_check: str):
         """Check if a project name exists and return its ID if found."""
-        with sqlite3.connect("projects.db") as conn:
+        with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 SELECT id FROM projects WHERE name = ?
             ''', (name_to_check,))
             row = cursor.fetchone()
         return row[0] if row else None
+    
+    @staticmethod
+    def get_total_time_tracked():
+        """Retrieve the total time tracked across all projects."""
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT SUM(time_tracked) FROM projects
+            ''')
+            total_time = cursor.fetchone()[0]
+        return total_time
