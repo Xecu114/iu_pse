@@ -12,7 +12,7 @@ from src.projectmanagement import ProjectManagement
 # from main_vg import main
 from common.constants import WIDTH, HEIGHT, \
     COLOR_BEIGE_HEX, COLOR_OCEANBAY_HEX, COLOR_OCEANBAY_RGB, COLOR_ROSE_RGB, COLOR_ROSE_HEX, COLOR_RED_HEX, \
-    IMGDIR_GUI_FLOWER_MEADOW
+    IMGDIR_GUI_FLOWER_MEADOW, COLOR_SOFTCORAL_HEX
 
 
 class CircleWithNumber(QWidget):
@@ -243,7 +243,7 @@ class MainSession(QMainWindow):
     def draw_point_overview(self, layout : QVBoxLayout):
         # Text Element
         points_label = QLabel("POINTS")
-        points_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
+        points_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         points_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(points_label)
 
@@ -282,7 +282,7 @@ class MainSession(QMainWindow):
     def draw_time_management_area(self, layout : QVBoxLayout):
         # Display current timer mode
         self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
-        self.timer_mode_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
+        self.timer_mode_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.timer_mode_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.timer_mode_label)
         
@@ -310,10 +310,13 @@ class MainSession(QMainWindow):
         work_input_layout = QHBoxLayout()
         self.pomodoro_work_input = QLineEdit()
         self.pomodoro_work_input.setText("00:25:00")
-        self.pomodoro_work_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pomodoro_work_input.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
+            color: {COLOR_OCEANBAY_HEX};\
+            border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.pomodoro_work_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pomodoro_work_input.setVisible(True)
         work_input_layout.addWidget(self.pomodoro_work_input)
+        work_input_layout.addStretch()
         # Label next to the input box
         self.pomodoro_work_input_label = QLabel("set work time ")
         self.pomodoro_work_input_label.setStyleSheet(
@@ -324,10 +327,13 @@ class MainSession(QMainWindow):
         break_input_layout = QHBoxLayout()
         self.pomodoro_break_input = QLineEdit()
         self.pomodoro_break_input.setText("00:05:00")
-        self.pomodoro_break_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pomodoro_break_input.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
+            color: {COLOR_OCEANBAY_HEX};\
+            border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.pomodoro_break_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.pomodoro_break_input.setVisible(True)
         break_input_layout.addWidget(self.pomodoro_break_input)
+        break_input_layout.addStretch()
         # Label next to the input box
         self.pomodoro_break_input_label = QLabel("set break time")
         self.pomodoro_break_input_label.setStyleSheet(
@@ -338,8 +344,10 @@ class MainSession(QMainWindow):
         # Input field for timer
         self.timer_input_field = QLineEdit()
         self.timer_input_field.setText("00:50:00")
-        self.timer_input_field.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.timer_input_field.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
+            color: {COLOR_OCEANBAY_HEX};\
+            border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.timer_input_field.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.timer_input_field.setVisible(False)
         layout.addWidget(self.timer_input_field)
         
@@ -358,7 +366,7 @@ class MainSession(QMainWindow):
         
         # Text "Projects"
         projects_label = QLabel("PROJECTS")
-        projects_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
+        projects_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(projects_label)
         
@@ -399,6 +407,25 @@ class MainSession(QMainWindow):
         # Add pie chart for project time distribution
         self.projects_pie_chart = ProjectsOverviewPieChart()
         layout.addWidget(self.projects_pie_chart.chart_view)
+        
+        # add strecht to push content to the top and foloowing item to the bottom
+        layout.addStretch()
+        
+        # Create items to manually add time
+        layout_add_time = QHBoxLayout()
+        # Button next to the input field
+        pr_add_time_button = self.create_button("Add time", COLOR_OCEANBAY_HEX, self.add_time_to_project)
+        # Input field
+        self.pr_add_time = QLineEdit()
+        self.pr_add_time.setText("")
+        self.pr_add_time.setPlaceholderText("Add x minutes to the current project")
+        self.pr_add_time.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold; \
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.pr_add_time.setVisible(True)
+        # Add to layout
+        layout_add_time.addWidget(pr_add_time_button)
+        layout_add_time.addWidget(self.pr_add_time)
+        layout.addLayout(layout_add_time)
 
     def draw_project_info_area(self, layout : QVBoxLayout):
         # build layout for input fields
@@ -413,8 +440,8 @@ class MainSession(QMainWindow):
         self.pr_name_input = QLineEdit()
         self.pr_name_input.setText(self.current_project.name)
         self.pr_name_input.setPlaceholderText("Physics")
-        self.pr_name_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pr_name_input.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold; \
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         self.pr_name_input.setVisible(True)
         inputv1_layout.addWidget(self.pr_name_input_label)
         inputv2_layout.addWidget(self.pr_name_input)
@@ -429,8 +456,8 @@ class MainSession(QMainWindow):
         self.pr_description_input = QLineEdit()
         self.pr_description_input.setText(self.current_project.description)
         self.pr_description_input.setPlaceholderText("Physics class")
-        self.pr_description_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pr_description_input.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold; \
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         self.pr_description_input.setVisible(True)
         inputv1_layout.addWidget(self.pr_description_input_label)
         inputv2_layout.addWidget(self.pr_description_input)
@@ -443,8 +470,8 @@ class MainSession(QMainWindow):
         self.pr_type_input = QLineEdit()
         self.pr_type_input.setText(self.current_project.type)
         self.pr_type_input.setPlaceholderText("Study")
-        self.pr_type_input.setStyleSheet(f"font-size: 16px; padding: 5px; color: {COLOR_OCEANBAY_HEX};\
-            border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.pr_type_input.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold; \
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         self.pr_type_input.setVisible(True)
         inputv1_layout.addWidget(self.pr_type_input_label)
         inputv2_layout.addWidget(self.pr_type_input)
@@ -459,8 +486,8 @@ class MainSession(QMainWindow):
         self.project_start_date_edit = QDateEdit(self)
         self.project_start_date_edit.setCalendarPopup(True)  # Enable the calendar popup
         self.project_start_date_edit.setDate(self.current_project.start_date)  # Set default date
-        self.project_start_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
-            color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.project_start_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         start_date_layout.addWidget(self.project_start_date_label)
         start_date_layout.addWidget(self.project_start_date_edit)
         layout.addLayout(start_date_layout)
@@ -472,8 +499,8 @@ class MainSession(QMainWindow):
         self.project_end_date_edit = QDateEdit(self)
         self.project_end_date_edit.setCalendarPopup(True)  # Enable the calendar popup
         self.project_end_date_edit.setDate(self.current_project.end_date)  # Set default date
-        self.project_end_date_edit.setStyleSheet(f"font-size: 16px; padding: 5px; font-weight: bold;\
-            color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
+        self.project_end_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
+            color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
@@ -552,6 +579,21 @@ class MainSession(QMainWindow):
     def update_projects_dropdown_menu(self):
         self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
  
+    def add_time_to_project(self):
+        self.input_error_label.setVisible(False)
+        input = self.pr_add_time.text()
+        self.pr_add_time.setText("")
+        if input.isdigit():
+            number = int(input)
+            if 1 <= number <= 999:
+                self.time_manager.productiv_minutes += number
+            else:
+                self.show_error("Number must be between 1 and 999")
+                print("Number must be between 1 and 999")  # debug message
+        else:
+            self.show_error("Input must be a number")
+            print(f"Input must be a number... input: {input}")  # debug message
+
     def update_gui(self):
         """Update the GUI."""
         
