@@ -636,7 +636,7 @@ class MainSession(QMainWindow):
     
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
-        self.point_system.add_points(self.time_manager.productiv_minutes//1)
+        self.point_system.add_points(self.time_manager.productiv_minutes//10)
         
         # Project Management
         self.current_project.add_time(self.time_manager.productiv_minutes)
