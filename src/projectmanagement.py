@@ -8,12 +8,18 @@ class ProjectManagement:
     def __init__(self, connection=None):
         self.conn = connection or sqlite3.connect(DB_FILE)
         self.cursor = self.conn.cursor()
-        project_names = ProjectManagement.get_projects_name_list(self.conn)
-        if project_names:
-            self.id = ProjectManagement.get_id_by_name(project_names[0], self.conn)
-            self.load_data_from_sql()
-        else:
-            self.add_project()
+        try:
+            project_names = ProjectManagement.get_projects_name_list(self.conn)
+            if project_names:   # If there are projects in the database
+                self.id = ProjectManagement.get_id_by_name(project_names[0], self.conn)
+                self.load_data_from_sql()
+            else:   # If there are no projects in the database
+                self.add_project()
+        except sqlite3.OperationalError as e:   # Handle the case where the table does not exist
+            if "no such table" in str(e).lower():
+                self.add_project()
+            else:   # Raise the error if it is not related to the table not existing
+                raise
     
     def add_time(self, minutes: int):
         self.time_tracked += minutes
