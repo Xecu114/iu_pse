@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import sqlite3
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
 from PyQt6.QtCore import Qt, QTimer
@@ -70,12 +71,8 @@ class ProjectsOverviewPieChart:
         # self.layout = QVBoxLayout()  # Erstelle einen Layout-Container
         # self.layout.addWidget(self.chart_view)
 
-        self.update_data()
-
-    def update_data(self):
+    def update_data(self, project_names, time_tracked_list):
         """Aktualisiere das Diagramm mit den neuesten Daten."""
-        project_names = ProjectManagement.get_projects_name_list()
-        time_tracked_list = ProjectManagement.get_projects_time_tracked_list()
 
         self.series.clear()  # Vorhandene Daten entfernen
         for i, name in enumerate(project_names):
@@ -83,14 +80,15 @@ class ProjectsOverviewPieChart:
 
 
 class MainSession(QMainWindow):
-    def __init__(self):
+    def __init__(self, connection: sqlite3.Connection):
         super().__init__()
         self.data_filename = "data.json"
         
         # Create class instances
         self.point_system = PointsSystem()
         self.time_manager = TimeManagement()
-        self.current_project = ProjectManagement()
+        self.conn = connection
+        self.current_project = ProjectManagement(self.conn)
         
         # UI
         self.setWindowTitle("ProductivityGarden")
@@ -374,7 +372,7 @@ class MainSession(QMainWindow):
         self.projects_dropdown = QComboBox()
         self.projects_dropdown.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
             color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
-        self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list())
+        self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list(self.conn))
         self.projects_dropdown.currentIndexChanged.connect(self.select_project_from_dropdown)
         layout.addWidget(self.projects_dropdown)
         
@@ -568,7 +566,7 @@ class MainSession(QMainWindow):
         self.projects_dropdown.setCurrentIndex(0)
     
     def select_project_from_dropdown(self):
-        self.current_project.id = ProjectManagement.get_id_by_name(self.projects_dropdown.currentText())
+        self.current_project.id = ProjectManagement.get_id_by_name(self.projects_dropdown.currentText(), self.conn)
         self.current_project.load_data_from_sql()
         self.pr_name_input.setText(self.current_project.name)
         self.pr_description_input.setText(self.current_project.description)
@@ -666,7 +664,9 @@ class MainSession(QMainWindow):
         
         # update Project Overview
         self.circle_project_time.update_widget(self.current_project.get_time())
-        self.projects_pie_chart.update_data()
+        self.projects_pie_chart.update_data(
+            ProjectManagement.get_projects_name_list(self.conn),
+            ProjectManagement.get_projects_time_tracked_list(self.conn))
     
     def save_json_data(self):
         # save points and settings to json file
