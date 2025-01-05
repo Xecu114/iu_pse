@@ -1,7 +1,9 @@
 import unittest
+import sqlite3
 from PyQt6.QtWidgets import QApplication
 from src.session import MainSession
 from common.constants import WIDTH, HEIGHT
+from src.projectmanagement import DB_FILE
 
 
 class TestMainSession(unittest.TestCase):
@@ -10,8 +12,35 @@ class TestMainSession(unittest.TestCase):
         cls.app = QApplication([])
 
     def setUp(self):
-        self.main_session = MainSession()
+        # Set up a test database
+        self.conn = sqlite3.connect(DB_FILE)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS projects (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                description TEXT,
+                type TEXT,
+                time_tracked INTEGER,
+                start_date TEXT,
+                end_date TEXT,
+                status TEXT
+            )
+        ''')
+        self.conn.commit()
+        self.cursor.execute('''
+            INSERT INTO projects (id, name, description, type, time_tracked, start_date, end_date, status)
+            VALUES (1, "Test Project", "Test Description", "Test Type", 60, "2023-01-01", "2023-01-01", "active")
+        ''')
+        self.conn.commit()
+        self.main_session = MainSession(self.conn)
 
+    def tearDown(self):
+        # Clean up the test database
+        self.cursor.execute('DROP TABLE IF EXISTS projects')
+        self.conn.commit()
+        self.conn.close()
+    
     def test_initial_ui_setup(self):
         self.assertEqual(self.main_session.windowTitle(), "ProductivityGarden")
         self.assertEqual(self.main_session.width(), WIDTH)
@@ -66,7 +95,7 @@ class TestMainSession(unittest.TestCase):
         self.main_session.text_box.setPlainText("Test text")
         self.main_session.save_json_data()
 
-        new_session = MainSession()
+        new_session = MainSession(self.conn)
         new_session.load_json_data()
         total_points, available_points = new_session.point_system.get_points()
         self.assertEqual(total_points, 10)
