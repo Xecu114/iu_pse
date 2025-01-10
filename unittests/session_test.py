@@ -64,27 +64,27 @@ class TestMainSession(unittest.TestCase):
     def test_start_time(self):
         self.main_session.pomodoro_work_input.setText("00:25:00")
         self.main_session.pomodoro_break_input.setText("00:05:00")
-        self.main_session.start_time()
+        self.main_session.handle_start_time()
         self.assertEqual(self.main_session.time_manager.mode, "running")
 
     def test_pause_time(self):
-        self.main_session.start_time()
-        self.main_session.pause_time()
+        self.main_session.handle_start_time()
+        self.main_session.handle_pause_time()
         self.assertEqual(self.main_session.time_manager.mode, "paused")
-        self.main_session.pause_time()
+        self.main_session.handle_pause_time()
         self.assertEqual(self.main_session.time_manager.mode, "running")
 
     def test_stop_time(self):
-        self.main_session.start_time()
-        self.main_session.stop_time()
+        self.main_session.handle_start_time()
+        self.main_session.handle_stop_time()
         self.assertEqual(self.main_session.time_manager.mode, "stopped")
 
     def test_toggle_mode(self):
-        self.main_session.toggle_mode()
+        self.main_session.handle_toggle_mode()
         self.assertEqual(self.main_session.time_manager.selected_timer, "timer")
-        self.main_session.toggle_mode()
+        self.main_session.handle_toggle_mode()
         self.assertEqual(self.main_session.time_manager.selected_timer, "stopwatch")
-        self.main_session.toggle_mode()
+        self.main_session.handle_toggle_mode()
         self.assertEqual(self.main_session.time_manager.selected_timer, "pomodoro")
 
     def test_save_and_load_data(self):

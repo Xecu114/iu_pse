@@ -83,6 +83,7 @@ class MainSession(QMainWindow):
     def __init__(self, connection: sqlite3.Connection):
         super().__init__()
         self.data_filename = "data.json"
+        self.minute_counter = 0
         
         # Create class instances
         self.point_system = PointsSystem()
@@ -628,7 +629,10 @@ class MainSession(QMainWindow):
     
     def sync_variables(self):
         # get counter of productiv minutes from timemanagement
-        self.point_system.add_points(self.time_manager.productiv_minutes//10)
+        self.minute_counter += self.time_manager.productiv_minutes
+        if self.minute_counter >= 10:
+            self.point_system.add_points(self.minute_counter//10)
+            self.minute_counter = self.minute_counter % 10
         
         # Project Management
         self.current_project.add_time(self.time_manager.productiv_minutes)
