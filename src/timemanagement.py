@@ -113,13 +113,8 @@ class TimeManagement:
         self.elapsed_time = QTime(0, 0, 0)
         self.remaining_timem = QTime(0, 0, 0)
         self.mode = "stopped"
-
-    # TODO delete?
-    # def get_display_time(self):
-    #     if self.mode == "stopped" and self.remaining_time != QTime(0, 0, 0):
-    #         return self.remaining_time.toString("hh:mm:ss")
-    #     return self.elapsed_time.toString("hh:mm:ss") if self.mode != "stopped" else "00:00:00"
-    
-    def set_timer_mode(self, timer_mode):
+  
+    def set_timer_mode(self, timer_mode: str):
+        """Set the timer mode to either 'pomodoro', 'timer' or 'stopwatch'."""
         self.selected_timer = timer_mode
         self.stop()  # Reset the timer/stopwatch

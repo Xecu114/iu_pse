@@ -93,7 +93,7 @@ class MainSession(QMainWindow):
         # UI
         self.setWindowTitle("ProductivityGarden")
         self.setGeometry(100, 100, WIDTH, HEIGHT)
-        self.setup_ui()
+        self.setup_gui()
         
         self.load_json_data()
         self.update_high_frequency()
@@ -108,29 +108,29 @@ class MainSession(QMainWindow):
         self.update_timer_low_frequency.timeout.connect(self.update_low_frequency)
         self.update_timer_low_frequency.start(2000)
 
-    def setup_ui(self):
+    def setup_gui(self):
         """Setup the main UI layout and widgets."""
         # Main layout with 3 columns
         main_layout = QHBoxLayout()
 
         # Add first column
-        first_column_container = self.create_first_column()
+        first_column_container = self.gui_create_first_column()
         main_layout.addWidget(first_column_container, stretch=1)
 
         # Separator line
-        separator1 = self.create_separator()
+        separator1 = self.gui_create_separator()
         main_layout.addWidget(separator1)
 
         # Add second column
-        second_column_container = self.create_second_column()
+        second_column_container = self.gui_create_second_column()
         main_layout.addWidget(second_column_container, stretch=1)
 
         # Separator line
-        separator2 = self.create_separator()
+        separator2 = self.gui_create_separator()
         main_layout.addWidget(separator2)
 
         # Add third column
-        third_column_container = self.create_third_column()
+        third_column_container = self.gui_create_third_column()
         main_layout.addWidget(third_column_container, stretch=1)
 
         # Set central widget
@@ -139,17 +139,17 @@ class MainSession(QMainWindow):
         central_widget.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         self.setCentralWidget(central_widget)
 
-    def create_first_column(self):
+    def gui_create_first_column(self):
         """Create the first column with the points overview,
         "to the gardens" navigation button and an image of a meadow"""
         layout = QVBoxLayout()
         
         # create point overview
-        self.draw_point_overview(layout)
+        self.gui_draw_point_overview(layout)
         
         # create button to the gardens
-        # button = self.create_button("TO THE GARDENS", main)
-        button = self.create_button("TO THE GARDENS", COLOR_OCEANBAY_HEX)
+        # button = self.gui_create_button("TO THE GARDENS", main)
+        button = self.gui_create_button("TO THE GARDENS", COLOR_OCEANBAY_HEX)
         layout.addWidget(button)
         
         # Image
@@ -168,11 +168,11 @@ class MainSession(QMainWindow):
         container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
-    def create_second_column(self):
+    def gui_create_second_column(self):
         """Create the second column with a clock label and input field."""
         layout = QVBoxLayout()
 
-        self.draw_time_management_area(layout)
+        self.gui_draw_time_management_area(layout)
 
         # Add spacer to push content to the top
         layout.addStretch()
@@ -192,12 +192,12 @@ class MainSession(QMainWindow):
         container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
-    def create_third_column(self):
+    def gui_create_third_column(self):
         """Create the third column with a projects label."""
         layout = QVBoxLayout()
 
         # Create project overview
-        self.draw_project_overview(layout)
+        self.gui_draw_project_overview(layout)
         
         # Add spacer to push content to the top
         layout.addStretch()
@@ -207,14 +207,14 @@ class MainSession(QMainWindow):
         container.setStyleSheet(f"background-color: {COLOR_BEIGE_HEX};")
         return container
 
-    def create_separator(self):
+    def gui_create_separator(self):
         """Create a separator line."""
         separator = QWidget()
         separator.setFixedWidth(1)
         separator.setStyleSheet(f"background-color: {COLOR_OCEANBAY_HEX};")
         return separator
 
-    def create_button(self, text, main_color: str, callback=None):
+    def gui_create_button(self, text, main_color: str, callback=None):
         button = QPushButton(text)
         button.setStyleSheet(f"""
             QPushButton{{
@@ -238,7 +238,7 @@ class MainSession(QMainWindow):
             button.clicked.connect(callback)
         return button
 
-    def draw_point_overview(self, layout : QVBoxLayout):
+    def gui_draw_point_overview(self, layout : QVBoxLayout):
         # Text Element
         points_label = QLabel("POINTS")
         points_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
@@ -277,7 +277,7 @@ class MainSession(QMainWindow):
         # Add the horizontal layout to the main layout
         layout.addLayout(circle_and_text_layout_tot)
 
-    def draw_time_management_area(self, layout : QVBoxLayout):
+    def gui_draw_time_management_area(self, layout : QVBoxLayout):
         # Display current timer mode
         self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
         self.timer_mode_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
@@ -292,14 +292,13 @@ class MainSession(QMainWindow):
         
         # Buttons to control the various time functions
         buttons_layout = QHBoxLayout()
-        start_button = self.create_button("Start", COLOR_OCEANBAY_HEX, self.start_time)
+        start_button = self.gui_create_button("Start", COLOR_OCEANBAY_HEX, self.handle_start_time)
         buttons_layout.addWidget(start_button)
 
-        self.pause_button = self.create_button("-", COLOR_OCEANBAY_HEX, self.pause_time)
+        self.pause_button = self.gui_create_button("-", COLOR_OCEANBAY_HEX, self.handle_pause_time)
         buttons_layout.addWidget(self.pause_button)
         
-        stop_button = self.create_button("Stop", COLOR_OCEANBAY_HEX, self.stop_time)
-        stop_button.clicked.connect(self.stop_time)
+        stop_button = self.gui_create_button("Stop", COLOR_OCEANBAY_HEX, self.handle_stop_time)
         buttons_layout.addWidget(stop_button)
         
         layout.addLayout(buttons_layout)
@@ -356,10 +355,10 @@ class MainSession(QMainWindow):
         layout.addWidget(self.input_error_label)
         
         # Toggle button for stopwatch/timer
-        self.mode_toggle_button = self.create_button("Switch to Timer", COLOR_OCEANBAY_HEX, self.toggle_mode)
+        self.mode_toggle_button = self.gui_create_button("Switch to Timer", COLOR_OCEANBAY_HEX, self.handle_toggle_mode)
         layout.addWidget(self.mode_toggle_button)
 
-    def draw_project_overview(self, layout : QVBoxLayout):
+    def gui_draw_project_overview(self, layout : QVBoxLayout):
         layout = layout
         
         # Text "Projects"
@@ -373,22 +372,19 @@ class MainSession(QMainWindow):
         self.projects_dropdown.setStyleSheet(f"font-size: 16px; font-weight: bold; padding: 5px; \
             color: {COLOR_OCEANBAY_HEX}; border: 1px solid {COLOR_OCEANBAY_HEX};")
         self.projects_dropdown.addItems(ProjectManagement.get_projects_name_list(self.conn))
-        self.projects_dropdown.currentIndexChanged.connect(self.select_project_from_dropdown)
+        self.projects_dropdown.currentIndexChanged.connect(self.handle_select_project_from_dropdown)
         layout.addWidget(self.projects_dropdown)
         
         # Button to add a new project and one to delete the selected project
         buttons_layout = QHBoxLayout()
-        add_button = self.create_button("Add", COLOR_OCEANBAY_HEX, self.add_new_project)
+        add_button = self.gui_create_button("Add", COLOR_OCEANBAY_HEX, self.handle_add_new_project)
         buttons_layout.addWidget(add_button)
-        # TODO: delete ?
-        # edit_button = self.create_button("Edit", self.edit_selected_project)
-        # buttons_layout.addWidget(edit_button)
-        del_button = self.create_button("Delete", COLOR_OCEANBAY_HEX, self.del_selected_project)
+        del_button = self.gui_create_button("Delete", COLOR_OCEANBAY_HEX, self.handle_delete_project)
         buttons_layout.addWidget(del_button)
         layout.addLayout(buttons_layout)
         
         # Add edit info area
-        self.draw_project_info_area(layout)
+        self.gui_draw_project_info_area(layout)
         
         # Tracked time for the selected project (Circle with number)
         circle_and_text_layout = QHBoxLayout()
@@ -412,7 +408,7 @@ class MainSession(QMainWindow):
         # Create items to manually add time
         layout_add_time = QHBoxLayout()
         # Button next to the input field
-        pr_add_time_button = self.create_button("Add time", COLOR_OCEANBAY_HEX, self.add_time_to_project)
+        pr_add_time_button = self.gui_create_button("Add time", COLOR_OCEANBAY_HEX, self.handle_add_time_to_project)
         # Input field
         self.pr_add_time = QLineEdit()
         self.pr_add_time.setText("")
@@ -425,7 +421,7 @@ class MainSession(QMainWindow):
         layout_add_time.addWidget(self.pr_add_time)
         layout.addLayout(layout_add_time)
 
-    def draw_project_info_area(self, layout : QVBoxLayout):
+    def gui_draw_project_info_area(self, layout : QVBoxLayout):
         # build layout for input fields
         inputh_layout = QHBoxLayout()
         inputv1_layout = QVBoxLayout()
@@ -444,7 +440,7 @@ class MainSession(QMainWindow):
         inputv1_layout.addWidget(self.pr_name_input_label)
         inputv2_layout.addWidget(self.pr_name_input)
         # connect to update dropdown menu
-        self.pr_name_input.textChanged.connect(self.update_projects_dropdown_menu)
+        self.pr_name_input.textChanged.connect(self.handle_update_projects_dropdown_menu)
         
         # Label next to the input box
         self.pr_description_input_label = QLabel("Description")
@@ -503,12 +499,12 @@ class MainSession(QMainWindow):
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
     
-    def show_error(self, text):
+    def gui_show_error(self, text):
         """Show error on gui."""
         self.input_error_label.setText(text)
         self.input_error_label.setVisible(True)
     
-    def start_time(self):
+    def handle_start_time(self):
         """Start the stopwatch or timer."""
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "stopwatch":
@@ -531,17 +527,17 @@ class MainSession(QMainWindow):
                 self.time_manager.set_timer(h, m, s)
                 self.time_manager.start_timer()
 
-    def pause_time(self):
+    def handle_pause_time(self):
         """Pause or resume the timer/stopwatch."""
         if self.time_manager.mode == "running":
             self.time_manager.pause()  # Pause the timer/stopwatch
         elif self.time_manager.mode == "paused":
             self.time_manager.resume()  # Resume the timer/stopwatch
 
-    def stop_time(self):
+    def handle_stop_time(self):
         self.time_manager.stop()
     
-    def toggle_mode(self):
+    def handle_toggle_mode(self):
         """Switch between Pomodoro-Timer, Timer and Stopwatch."""
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "pomodoro":
@@ -551,21 +547,17 @@ class MainSession(QMainWindow):
         elif self.time_manager.selected_timer == "stopwatch":
             self.time_manager.set_timer_mode("pomodoro")
     
-    def add_new_project(self):
+    def handle_add_new_project(self):
         self.current_project.add_project()
         self.projects_dropdown.addItem(self.current_project.name)
         self.projects_dropdown.setCurrentIndex(self.projects_dropdown.count()-1)
-    
-    # def edit_selected_project(self):
-    #     # TODO: open/close fields to change Name, Description, Type ...
-    #     pass
-    
-    def del_selected_project(self):
+        
+    def handle_delete_project(self):
         self.current_project.delete_project()
         self.projects_dropdown.removeItem(self.projects_dropdown.currentIndex())
         self.projects_dropdown.setCurrentIndex(0)
     
-    def select_project_from_dropdown(self):
+    def handle_select_project_from_dropdown(self):
         self.current_project.id = ProjectManagement.get_id_by_name(self.projects_dropdown.currentText(), self.conn)
         self.current_project.load_data_from_sql()
         self.pr_name_input.setText(self.current_project.name)
@@ -574,10 +566,10 @@ class MainSession(QMainWindow):
         self.project_start_date_edit.setDate(self.current_project.start_date)
         self.project_end_date_edit.setDate(self.current_project.end_date)
 
-    def update_projects_dropdown_menu(self):
+    def handle_update_projects_dropdown_menu(self):
         self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
  
-    def add_time_to_project(self):
+    def handle_add_time_to_project(self):
         self.input_error_label.setVisible(False)
         input = self.pr_add_time.text()
         self.pr_add_time.setText("")
@@ -586,10 +578,10 @@ class MainSession(QMainWindow):
             if 1 <= number <= 999:
                 self.time_manager.productiv_minutes += number
             else:
-                self.show_error("Number must be between 1 and 999")
+                self.gui_show_error("Number must be between 1 and 999")
                 print("Number must be between 1 and 999")  # debug message
         else:
-            self.show_error("Input must be a number")
+            self.gui_show_error("Input must be a number")
             print(f"Input must be a number... input: {input}")  # debug message
 
     def update_gui(self):
@@ -703,7 +695,7 @@ class MainSession(QMainWindow):
         regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
 
         if not re.match(regex, input_text):
-            self.show_error("Invalid Time Format Use hh:mm:ss.")
+            self.gui_show_error("Invalid Time Format Use hh:mm:ss.")
             return False
 
         # Split the time into hours, minutes, and seconds
@@ -712,9 +704,9 @@ class MainSession(QMainWindow):
 
         # Check if the time is between 1 minute and 24 hours
         if total_seconds < 60:
-            self.show_error("Time must be at least 1 minute.")
+            self.gui_show_error("Time must be at least 1 minute.")
             return False
         elif total_seconds > 24 * 3600:
-            self.show_error("Time cannot exceed 24 hours.")
+            self.gui_show_error("Time cannot exceed 24 hours.")
             return False
         return True
