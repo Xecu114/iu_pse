@@ -24,15 +24,15 @@ loaded_images = {}
 # Vegetationsdaten mit allen relevanten Pfaden
 VEGETATION_DATA = {
     "City Park": {
-        "ground": os.path.join(assets_path, "park_grass.jpg"),
+        "ground": os.path.join(assets_path, "park_grass.png"),
         "objects": [
-            {"name": "tree",    "image": os.path.join(assets_path, "park_tree.jpg")},
+            {"name": "tree",    "image": os.path.join(assets_path, "park_tree.png")},
             {"name": "flower",  "image": os.path.join(assets_path, "park_flower.jpg")},
             {"name": "bench",   "image": os.path.join(assets_path, "park_bench.jpg")},
         ]
     },
     "Desert": {
-        "ground": os.path.join(assets_path, "desert_sand.jpg"),
+        "ground": os.path.join(assets_path, "desert_sand.png"),
         "objects": [
             {"name": "cactus",  "image": os.path.join(assets_path, "desert_cactus.jpg")},
         ]
@@ -53,7 +53,11 @@ class GardenObject:
         if image in loaded_images:
             self.image = loaded_images[image]
         else:
-            img = pygame.image.load(image)
+            img = pygame.image.load(image).convert_alpha()
+            # TODO delete
+            # Colorkey auf Magenta setzen
+            # colorkey = (255, 0, 255)
+            # img.set_colorkey(colorkey)
             img = pygame.transform.scale(img, (SQUARE_SIZE, SQUARE_SIZE))
             loaded_images[image] = img
             self.image = img
