@@ -110,7 +110,6 @@ class Garden:
     def draw_garden_map(self, win):
         for o in placed_objects:
             o.draw(win)
-        pygame.display.update()
 
     def save_garden_map(self):
         with open(self.map_file, 'w') as f:
@@ -493,7 +492,7 @@ def main():
         while running:
             clock.tick(FPS)
 
-            # Zuerst Garten und Inventar zeichnen
+            # Zuerst Garten und dann Inventar drüber
             garden.draw_garden_map(WIN)
             icon_rects = draw_inventory(WIN, garden.garden_objects, selected_object_index)
             pygame.display.update()
