@@ -28,8 +28,6 @@ COLOR_BLUE_RGB = (31, 56, 85)
 
 assets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 
-IMGDIR_GRASS = str(os.path.join(assets_path, "grass.png"))
-IMGDIR_TREE = str(os.path.join(assets_path, "Regenwald_Baum.jpg"))
 IMGDIR_GUI_FLOWER_MEADOW = str(os.path.join(assets_path, "Gemini_flower_meadow.jpg"))
 
 DB_FILE = "projects.db"
