@@ -5,8 +5,8 @@ import json
 pygame.init()
 
 # Einstellungen
-WIDTH, HEIGHT = 1250, 700
-SQUARE_SIZE = 50
+WIDTH, HEIGHT = 1250, 700  # 1875, 1050
+SQUARE_SIZE = 50  # 75
 ROWS, COLS = HEIGHT // SQUARE_SIZE, WIDTH // SQUARE_SIZE
 
 FPS = 30
@@ -26,22 +26,30 @@ VEGETATION_DATA = {
     "City Park": {
         "ground": os.path.join(assets_path, "park_grass.png"),
         "objects": [
+            {"name": "path",    "image": os.path.join(assets_path, "park_path.png")},
+            {"name": "path_horizontal",    "image": os.path.join(assets_path, "park_path_horizontal.png")},
+            {"name": "path_cross",    "image": os.path.join(assets_path, "park_path_cross.png")},
             {"name": "tree",    "image": os.path.join(assets_path, "park_tree.png")},
-            {"name": "flower",  "image": os.path.join(assets_path, "park_flower.jpg")},
-            {"name": "bench",   "image": os.path.join(assets_path, "park_bench.jpg")},
+            {"name": "flower",  "image": os.path.join(assets_path, "park_flowers.png")},
+            {"name": "bench",   "image": os.path.join(assets_path, "park_bench.png")},
         ]
     },
     "Desert": {
         "ground": os.path.join(assets_path, "desert_sand.png"),
         "objects": [
-            {"name": "cactus",  "image": os.path.join(assets_path, "desert_cactus.jpg")},
+            {"name": "cactus",  "image": os.path.join(assets_path, "desert_cactus.png")},
+            {"name": "cactus2",  "image": os.path.join(assets_path, "desert_cactus2.png")},
+            {"name": "bush",  "image": os.path.join(assets_path, "desert_bush.png")},
+            {"name": "bush2",  "image": os.path.join(assets_path, "desert_bush2.png")},
+            {"name": "skeleton",  "image": os.path.join(assets_path, "desert_skeleton.png")},
         ]
     },
     "Rainforest": {
-        "ground": os.path.join(assets_path, "rainforest_ground.jpg"),
+        "ground": os.path.join(assets_path, "rainforest_ground.png"),
         "objects": [
-            {"name": "tree",    "image": os.path.join(assets_path, "rainforest_tree.jpg")},
-            {"name": "flower",  "image": os.path.join(assets_path, "rainforest_flower.jpg")},
+            {"name": "tree",    "image": os.path.join(assets_path, "rainforest_tree.png")},
+            {"name": "trees",    "image": os.path.join(assets_path, "rainforest_trees.png")},
+            {"name": "flowers",  "image": os.path.join(assets_path, "rainforest_flowers.png")},
         ]
     }
 }
@@ -54,10 +62,6 @@ class GardenObject:
             self.image = loaded_images[image]
         else:
             img = pygame.image.load(image).convert_alpha()
-            # TODO delete
-            # Colorkey auf Magenta setzen
-            # colorkey = (255, 0, 255)
-            # img.set_colorkey(colorkey)
             img = pygame.transform.scale(img, (SQUARE_SIZE, SQUARE_SIZE))
             loaded_images[image] = img
             self.image = img
@@ -103,15 +107,27 @@ class Garden:
         self.update_garden_map()
 
     def update_garden_map(self):
+        """
+        Re-creates PlacedObject instances based on the garden_map.
+        We only create them for indices > 0 (everything that's NOT ground).
+        """
         placed_objects.clear()
         for y, row in enumerate(self.garden_map):
             for x, element in enumerate(row):
-                PlacedObject(
-                    self.garden_objects[element],
-                    (x * SQUARE_SIZE, y * SQUARE_SIZE)
-                )
+                if element != 0:
+                    PlacedObject(
+                        self.garden_objects[element],
+                        (x * SQUARE_SIZE, y * SQUARE_SIZE)
+                    )
 
     def draw_garden_map(self, win):
+        # 1) Draw ground for every cell
+        for y in range(ROWS):
+            for x in range(COLS):
+                ground_object = self.garden_objects[0]  # index 0 is ground
+                win.blit(ground_object.image, (x * SQUARE_SIZE, y * SQUARE_SIZE))
+
+        # 2) Draw placed objects (these are all indices > 0)
         for o in placed_objects:
             o.draw(win)
 
