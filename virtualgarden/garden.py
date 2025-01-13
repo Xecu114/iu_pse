@@ -6,18 +6,18 @@ from virtualgarden.gardenobjects import PlacedObject
 
 class Garden:
     """
-    Der Garten verwaltet die Map-Daten (self.garden_map) und
-    eine Liste aller aktuell platzierten Objekte (self.placed_objects).
+    The garden manages the map data (self.garden_map) and
+    a list of all currently placed objects (self.placed_objects).
     """
     def __init__(self, map_file, garden_objects):
         self.map_file = map_file
         self.garden_objects = garden_objects
         self.garden_map = []
-        self.placed_objects = []  # => keine globale placed_objects mehr
+        self.placed_objects = []
         self.init_garden_map()
 
     def init_garden_map(self):
-        # Liste immer erstmal leeren
+        # clear list first
         self.placed_objects.clear()
         self.garden_map.clear()
 
@@ -28,18 +28,17 @@ class Garden:
                 row_data = [int(ch) for ch in line]
                 self.garden_map.append(row_data)
         else:
-            # Falls keine .map-Datei existiert: Leere Map (nur Nullen)
+            # If no .map file exists: Empty map (zeros only)
             for _ in range(ROWS):
                 row_data = [0] * COLS
                 self.garden_map.append(row_data)
 
-        # Damit direkt PlacedObjects erzeugt werden
         self.update_garden_map()
 
     def update_garden_map(self):
         """
-        Rekonstruiert die PlacedObject-Instanzen aus der garden_map.
-        Alles > 0 => wird als Objekt platziert.
+        Reconstructs the PlacedObject instances from the garden_map.
+        Everything > 0 => is placed as an object.
         """
         self.placed_objects.clear()  # erst mal leeren
         for y, row in enumerate(self.garden_map):
@@ -69,9 +68,8 @@ class Garden:
 
     def place_object(self, object_index):
         """
-        Platziert ein Objekt (object_index) an der aktuellen Mausposition.
-        Anschließend musst du `update_garden_map()` aufrufen, damit die
-        PlacedObject-Liste neu erstellt wird (oder du fügst es direkt hinzu).
+        Places an object (object_index) at the current mouse position.
+        Call `update_garden_map()` afterwards to recreate the PlacedObject list (or add it directly).
         """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         row = mouse_y // SQUARE_SIZE

@@ -2,20 +2,20 @@
 
 class GardenObject:
     """
-    Repräsentiert einen Objekttyp im Garten (z.B. Baum, Bank, etc.).
-    Enthält das geladene Bild und die Kosten.
+    Represents an object type in the garden (e.g. tree, bench, etc.).
+    Contains the loaded image and the cost.
     """
     def __init__(self, name, image_path, cost, resource_manager):
         self.name = name
         self.cost = cost
-        # Bild wird über ResourceManager bezogen (kein globales loaded_images)
+        # get the image from ResourceManager
         self.image = resource_manager.get_image(image_path)
 
 
 class PlacedObject:
     """
-    Jedes platzierte Objekt kennt seinen Garden, um sich selbst eintragen/entfernen zu können,
-    und das zugrunde liegende GardenObject (Bild, Kosten) + seine Position.
+    Each placed object knows its garden in order to be able to enter/remove itself
+    and the underlying GardenObject (image, cost) + its position.
     """
     def __init__(self, garden, garden_object, location):
         self.garden = garden
