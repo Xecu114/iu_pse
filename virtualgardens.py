@@ -1,6 +1,7 @@
-import pygame
-import os
 import json
+import os
+import pygame
+import subprocess
 
 pygame.init()
 
@@ -8,6 +9,7 @@ pygame.init()
 WIDTH, HEIGHT = 1250, 700  # 1875, 1050
 SQUARE_SIZE = 50  # 75
 ROWS, COLS = HEIGHT // SQUARE_SIZE, WIDTH // SQUARE_SIZE
+JSON_FILE = "data.json"
 
 FPS = 30
 FONT = pygame.font.SysFont("comicsans", 30)
@@ -21,43 +23,101 @@ assets_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 placed_objects = []
 loaded_images = {}
 
+
 # Vegetationsdaten mit allen relevanten Pfaden
 VEGETATION_DATA = {
     "City Park": {
         "ground": os.path.join(assets_path, "park_grass.png"),
         "objects": [
-            {"name": "path",    "image": os.path.join(assets_path, "park_path.png")},
-            {"name": "path_horizontal",    "image": os.path.join(assets_path, "park_path_horizontal.png")},
-            {"name": "path_cross",    "image": os.path.join(assets_path, "park_path_cross.png")},
-            {"name": "tree",    "image": os.path.join(assets_path, "park_tree.png")},
-            {"name": "flower",  "image": os.path.join(assets_path, "park_flowers.png")},
-            {"name": "bench",   "image": os.path.join(assets_path, "park_bench.png")},
+            {
+                "name": "path",
+                "image": os.path.join(assets_path, "park_path.png"),
+                "cost": 2
+            },
+            {
+                "name": "path_horizontal",
+                "image": os.path.join(assets_path, "park_path_horizontal.png"),
+                "cost": 2
+            },
+            {
+                "name": "path_cross",
+                "image": os.path.join(assets_path, "park_path_cross.png"),
+                "cost": 2
+            },
+            {
+                "name": "flowers",
+                "image": os.path.join(assets_path, "park_flowers.png"),
+                "cost": 2
+            },
+            {
+                "name": "bench",
+                "image": os.path.join(assets_path, "park_bench.png"),
+                "cost": 4
+            },
+            {
+                "name": "tree",
+                "image": os.path.join(assets_path, "park_tree.png"),
+                "cost": 8
+            },
         ]
     },
     "Desert": {
         "ground": os.path.join(assets_path, "desert_sand.png"),
         "objects": [
-            {"name": "cactus",  "image": os.path.join(assets_path, "desert_cactus.png")},
-            {"name": "cactus2",  "image": os.path.join(assets_path, "desert_cactus2.png")},
-            {"name": "bush",  "image": os.path.join(assets_path, "desert_bush.png")},
-            {"name": "bush2",  "image": os.path.join(assets_path, "desert_bush2.png")},
-            {"name": "skeleton",  "image": os.path.join(assets_path, "desert_skeleton.png")},
+            {
+                "name": "bush",
+                "image": os.path.join(assets_path, "desert_bush.png"),
+                "cost": 2
+            },
+            {
+                "name": "bush2",
+                "image": os.path.join(assets_path, "desert_bush2.png"),
+                "cost": 2
+            },
+            {
+                "name": "cactus",
+                "image": os.path.join(assets_path, "desert_cactus.png"),
+                "cost": 4
+            },
+            {
+                "name": "cactus2",
+                "image": os.path.join(assets_path, "desert_cactus2.png"),
+                "cost": 4
+            },
+            {
+                "name": "skeleton",
+                "image": os.path.join(assets_path, "desert_skeleton.png"),
+                "cost": 8
+            },
         ]
     },
     "Rainforest": {
         "ground": os.path.join(assets_path, "rainforest_ground.png"),
         "objects": [
-            {"name": "tree",    "image": os.path.join(assets_path, "rainforest_tree.png")},
-            {"name": "trees",    "image": os.path.join(assets_path, "rainforest_trees.png")},
-            {"name": "flowers",  "image": os.path.join(assets_path, "rainforest_flowers.png")},
+            {
+                "name": "flowers",
+                "image": os.path.join(assets_path, "rainforest_flowers.png"),
+                "cost": 2
+            },
+            {
+                "name": "tree",
+                "image": os.path.join(assets_path, "rainforest_tree.png"),
+                "cost": 8
+            },
+            {
+                "name": "trees",
+                "image": os.path.join(assets_path, "rainforest_trees.png"),
+                "cost": 10
+            },
         ]
     }
 }
 
 
 class GardenObject:
-    def __init__(self, name, image):
+    def __init__(self, name, image, cost: int):
         self.name = name
+        self.cost = cost
         if image in loaded_images:
             self.image = loaded_images[image]
         else:
@@ -241,7 +301,6 @@ def choose_vegetation(win):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 return None
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -260,13 +319,14 @@ def create_garden_objects(vegetation):
     data = VEGETATION_DATA[vegetation]
     
     # 1. Zuerst den Boden als Objekt (Index 0)
-    objects = [GardenObject("ground", data["ground"])]
+    objects = [GardenObject("ground", data["ground"], cost=0)]
     
     # 2. Dann alle anderen Objekte
     for obj_data in data["objects"]:
         name = obj_data["name"]
         image = obj_data["image"]
-        objects.append(GardenObject(name, image))
+        cost = obj_data["cost"]
+        objects.append(GardenObject(name, image, cost))
 
     return objects
 
@@ -276,7 +336,7 @@ def draw_menu(win: pygame.Surface):
     title_text = FONT.render("Virtual Garden", True, (255, 255, 255))
     new_garden_text = FONT.render("Create Garden", True, (255, 255, 255))
     load_garden_text = FONT.render("Load Garden", True, (255, 255, 255))
-    quit_text = FONT.render("Quit", True, (255, 255, 255))
+    quit_text = FONT.render("Back to Productivity Window", True, (255, 255, 255))
 
     title_rect = title_text.get_rect(center=(WIDTH // 2, 100))
     new_garden_rect = new_garden_text.get_rect(center=(WIDTH // 2, 250))
@@ -297,7 +357,7 @@ def main_menu():
     Gibt einen String zurück:
       - "new"   bei Klick auf "Create Garden"
       - "load"  bei Klick auf "Load Garden"
-      - "quit"  bei Klick auf "Quit"
+      - "quit"  bei Klick auf "Back to Productivity Window"
     """
     run = True
     while run:
@@ -305,9 +365,7 @@ def main_menu():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-                return "quit"
+                return "closed"
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -345,7 +403,6 @@ def text_input_dialog(win, prompt):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 return None  # Abbruch
 
             if event.type == pygame.KEYDOWN:
@@ -391,7 +448,6 @@ def load_garden_dialog(win):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
                 return None
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -406,8 +462,9 @@ def load_garden_dialog(win):
 
 def draw_inventory(win, garden_objects, selected_object_index):
     """
-    Zeichnet das Inventar am unteren Bildschirmrand und hebt das aktuell
+    Zeichnet das inventory am unteren Bildschirmrand und hebt das aktuell
     ausgewählte Objekt (selected_object_index) mit einem roten Rahmen hervor.
+    Außerdem wird rechts unten am Icon der Preis angezeigt.
     """
     inventory_height = 60
     pygame.draw.rect(win, (50, 50, 50), (0, HEIGHT - inventory_height, WIDTH, inventory_height))
@@ -416,7 +473,7 @@ def draw_inventory(win, garden_objects, selected_object_index):
     x_offset = 10
     y_offset = HEIGHT - inventory_height + 5
 
-    # Liste der Rects für die Inventar-Icons, um Klicks abzufangen
+    # Liste der Rects für die inventory-Icons, um Klicks abzufangen
     icon_rects = []
     
     for i, obj in enumerate(garden_objects):
@@ -425,7 +482,13 @@ def draw_inventory(win, garden_objects, selected_object_index):
         icon_rects.append(icon_rect)
         
         # Zeichne das Objekt-Icon
-        win.blit(icon_img, (x_offset, y_offset))
+        win.blit(icon_img, icon_rect.topleft)
+
+        # Kosten-Text in weiß rendern
+        cost_text = FONT.render(str(obj.cost), True, (255, 255, 255))
+        # Unten rechts ins Icon setzen:
+        cost_text_rect = cost_text.get_rect(bottomright=(icon_rect.right, icon_rect.bottom))
+        win.blit(cost_text, cost_text_rect)
 
         # Roter Rahmen um das aktuell ausgewählte Objekt
         if i == selected_object_index:
@@ -484,66 +547,124 @@ def load_existing_garden():
     return garden
 
 
+def save_json_data(available_points : int):
+    # save points to json file
+    if not os.path.exists(JSON_FILE):
+        return False
+    else:
+        with open(JSON_FILE, "r") as file:
+            data = json.load(file)
+            data["available_points"] = available_points
+            with open(JSON_FILE, "w") as file:
+                json.dump(data, file, indent=4)
+                return True
+    return False
+
+
+def load_json_data() -> int:
+    if not os.path.exists(JSON_FILE):
+        return 0
+    else:
+        with open(JSON_FILE, "r") as file:
+            data = json.load(file)
+            return data["available_points"]
+        return 0
+
+
+def draw_garden_map_with_ui(win, garden, available_points, garden_objects, selected_object_index):
+    # Zuerst Garten zeichnen
+    garden.draw_garden_map(win)
+    
+    # Punktestand oben links
+    points_text = FONT.render(f"Points: {available_points}", True, (255, 255, 255))
+    win.blit(points_text, (10, 10))
+    
+    # Dann inventory
+    icon_rects = draw_inventory(win, garden_objects, selected_object_index)
+    
+    pygame.display.update()
+    return icon_rects
+
+
 def main():
     # Cleanup metadata right at the start
     cleanup_garden_metadata()
     
+    # create variables
     clock = pygame.time.Clock()
+    available_points = load_json_data()
+    garden = None
+    user_closed_window = False  # flag to see if user closed the window by hitting "x"
     
     while True:
+        if user_closed_window:
+            break  # close game
+        
         action = main_menu()
-        if action == "quit":
+        if action == "closed":
             break
-        if action == "new":
+        elif action == "quit":
+            subprocess.Popen(["python", "main.py"])  # open gui
+            break  # close game
+        elif action == "new":
             garden = create_new_garden()
             if not garden:
-                continue
+                break
         elif action == "load":
             garden = load_existing_garden()
             if not garden:
-                continue
+                break
         else:
             continue
-
-        # Index des aktuell ausgewählten Objekts im Inventar
+        
+        # Index des aktuell ausgewählten Objekts im inventory
         selected_object_index = 0
         running = True
 
         while running:
             clock.tick(FPS)
 
-            # Zuerst Garten und dann Inventar drüber
-            garden.draw_garden_map(WIN)
-            icon_rects = draw_inventory(WIN, garden.garden_objects, selected_object_index)
-            pygame.display.update()
+            icon_rects = draw_garden_map_with_ui(WIN, garden, available_points,
+                                                 garden.garden_objects, selected_object_index)
 
             # Events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    user_closed_window = True  # user clicked "x"
                     running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Linksklick
-                        mouse_x, mouse_y = pygame.mouse.get_pos()
-                        clicked_on_inventory = False
+                    break  # close while loop
+                if not user_closed_window:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            running = False
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:  # Linksklick
+                            mouse_x, mouse_y = pygame.mouse.get_pos()
+                            clicked_on_inventory = False
+                            # inventory-Klick
+                            for i, rect in enumerate(icon_rects):
+                                if rect.collidepoint(mouse_x, mouse_y):
+                                    selected_object_index = i
+                                    clicked_on_inventory = True
+                                    break
+                            # Platzieren des Objekts
+                            if not clicked_on_inventory:
+                                # Kosten berechnen und prüfen
+                                selected_obj = garden.garden_objects[selected_object_index]
+                                cost = selected_obj.cost
+                                if available_points >= cost:
+                                    available_points -= cost
+                                    garden.place_object(selected_object_index)
+                                    garden.update_garden_map()
+                                else:
+                                    print("Not enough points!")  # oder irgendeine andere Meldung
 
-                        # Inventar-Klick
-                        for i, rect in enumerate(icon_rects):
-                            if rect.collidepoint(mouse_x, mouse_y):
-                                selected_object_index = i
-                                clicked_on_inventory = True
-                                break
-
-                        # Platzieren des Objekts
-                        if not clicked_on_inventory:
-                            garden.place_object(selected_object_index)
-                            garden.update_garden_map()
-
-        # Speichern beim Verlassen
-        garden.save_garden_map()
-
+    # save data before closing the window
+    save_json_data(available_points)
+    try:
+        garden.save_garden_map()  # type: ignore
+    except AttributeError:
+        pass
     pygame.quit()
 
 
