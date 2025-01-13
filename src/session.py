@@ -2,6 +2,7 @@ import json
 import os
 import re
 import sqlite3
+import subprocess
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, \
     QLineEdit, QPlainTextEdit, QComboBox, QDateEdit
 from PyQt6.QtCore import Qt, QTimer
@@ -150,8 +151,8 @@ class MainSession(QMainWindow):
         
         # create button to the gardens
         # button = self.gui_create_button("TO THE GARDENS", main)
-        button = self.gui_create_button("TO THE GARDENS", COLOR_OCEANBAY_HEX)
-        layout.addWidget(button)
+        button_gardens = self.gui_create_button("TO THE GARDENS", COLOR_OCEANBAY_HEX, self.handle_open_virtualgardens)
+        layout.addWidget(button_gardens)
         
         # Image
         image_label = QLabel()
@@ -585,6 +586,11 @@ class MainSession(QMainWindow):
             self.gui_show_error("Input must be a number")
             print(f"Input must be a number... input: {input}")  # debug message
 
+    def handle_open_virtualgardens(self):
+        """Start virtualgardens.py and close this app."""
+        self.close()
+        subprocess.Popen(["python", "virtualgardens.py"])
+    
     def update_gui(self):
         """Update the GUI."""
         
