@@ -4,10 +4,14 @@ import os
 # Bildschirmauflösung abrufen
 screen_width, screen_height = pyautogui.size()
 
+# GUI / PyQt
 WIDTH, HEIGHT = 1280, 720
 # int(screen_width/1.5), int(screen_height/1.5)
-SQUARE_SIZE = 50
-ROWS, COLS = HEIGHT//SQUARE_SIZE, WIDTH//SQUARE_SIZE
+
+# VG / Pygame
+GAME_WIDTH, GAME_HEIGHT = 1250, 700  # 1875, 1050
+SQUARE_SIZE = 50  # 75
+ROWS, COLS = HEIGHT // SQUARE_SIZE, WIDTH // SQUARE_SIZE
 
 # colors
 COLOR_BEIGE_HEX = '#f7ede3'
@@ -17,17 +21,19 @@ COLOR_OCEANBAY_RGB = (100, 129, 129)
 COLOR_ROSE_HEX = '#f5cac2'
 COLOR_ROSE_RGB = (245, 202, 194)
 COLOR_RED_HEX = '#f28582'
-# unused
 COLOR_SOFTCORAL_HEX = '#edc3ae'
 COLOR_SOFTCORAL_RGB = (237, 195, 174)
+# unused
 COLOR_TURQUOISE_HEX = '#c1e7e3'
 COLOR_BABYBLUE_HEX = '#dfebeb'
 COLOR_BABYBLUE_RGB = (223, 235, 235)
 COLOR_BLUE_HEX = '#1f3855'
 COLOR_BLUE_RGB = (31, 56, 85)
 
-assets_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
-
-IMGDIR_GUI_FLOWER_MEADOW = str(os.path.join(assets_path, "Gemini_flower_meadow.jpg"))
-
+# file paths
+JSON_FILE = "data.json"
 DB_FILE = "projects.db"
+MAP_FOLDER_PATH = "virtualgarden\\gardens\\"
+MAPDATA_FILE_PATH = os.path.join(MAP_FOLDER_PATH, "gardens_data.json")
+ASSETS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+IMGDIR_GUI_FLOWER_MEADOW = str(os.path.join(ASSETS_PATH, "Gemini_flower_meadow.jpg"))
