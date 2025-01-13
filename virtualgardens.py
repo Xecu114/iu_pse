@@ -180,7 +180,7 @@ def cleanup_garden_metadata():
     save_garden_metadata(metadata)
 
 
-def choose_vegetation(win):
+def choose_vegetation(win: pygame.Surface):
     """
     Shows a small menu with the vegetation.
     Returns the string (“City Park”, “Desert” or “Rainforest”)
@@ -292,7 +292,7 @@ def main_menu():
                     return "quit"
 
 
-def text_input_dialog(win, prompt):
+def text_input_dialog(win: pygame.Surface, prompt):
     """
     Displays an input field in which the user can enter a name.
     The entry is confirmed with ENTER and then returned.
@@ -331,7 +331,7 @@ def text_input_dialog(win, prompt):
     return user_text
 
 
-def load_garden_dialog(win):
+def load_garden_dialog(win: pygame.Surface):
     """
     Scans the current directory for .map files and displays them as a list.
     When clicked, the file name is returned.
@@ -373,7 +373,7 @@ def load_garden_dialog(win):
     return None
 
 
-def draw_inventory(win, garden_objects, selected_object_index):
+def draw_inventory(win: pygame.Surface, garden_objects, selected_object_index):
     """
     Draws the inventory at the bottom of the screen and highlights the currently
     selected object (selected_object_index) with a red frame.
@@ -496,7 +496,8 @@ def load_json_data() -> int:
         return 0
 
 
-def draw_garden_map_with_ui(win, garden, available_points, garden_objects, selected_object_index):
+def draw_garden_map_with_ui(win: pygame.Surface, garden: Garden,
+                            available_points, garden_objects, selected_object_index):
     """
     Draw the garden with point score and inventory
     """
