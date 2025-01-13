@@ -1,8 +1,8 @@
-import pyautogui
+# import pyautogui
 import os
 
-# Bildschirmauflösung abrufen
-screen_width, screen_height = pyautogui.size()
+# screen resolution
+# screen_width, screen_height = pyautogui.size()
 
 # GUI / PyQt
 WIDTH, HEIGHT = 1280, 720
