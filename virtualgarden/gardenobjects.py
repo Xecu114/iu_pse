@@ -1,28 +1,30 @@
-import pygame
-from common.constants import SQUARE_SIZE
 
 
 class GardenObject:
-    def __init__(self, name, image, cost: int):
+    """
+    Repräsentiert einen Objekttyp im Garten (z.B. Baum, Bank, etc.).
+    Enthält das geladene Bild und die Kosten.
+    """
+    def __init__(self, name, image_path, cost, resource_manager):
         self.name = name
         self.cost = cost
-        if image in loaded_images:
-            self.image = loaded_images[image]
-        else:
-            img = pygame.image.load(image).convert_alpha()
-            img = pygame.transform.scale(img, (SQUARE_SIZE, SQUARE_SIZE))
-            loaded_images[image] = img
-            self.image = img
+        # Bild wird über ResourceManager bezogen (kein globales loaded_images)
+        self.image = resource_manager.get_image(image_path)
 
 
 class PlacedObject:
-    def __init__(self, garden_object, location):
+    """
+    Jedes platzierte Objekt kennt seinen Garden, um sich selbst eintragen/entfernen zu können,
+    und das zugrunde liegende GardenObject (Bild, Kosten) + seine Position.
+    """
+    def __init__(self, garden, garden_object, location):
+        self.garden = garden
         self.garden_object = garden_object
         self.location = location
-        placed_objects.append(self)
+        self.garden.placed_objects.append(self)
 
     def delete(self):
-        placed_objects.remove(self)
-        
+        self.garden.placed_objects.remove(self)
+
     def draw(self, win):
         win.blit(self.garden_object.image, self.location)

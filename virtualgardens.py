@@ -2,6 +2,8 @@ import json
 import os
 import pygame
 import subprocess
+from virtualgarden.gardenobjects import GardenObject
+from virtualgarden.garden import Garden
 
 pygame.init()
 
@@ -19,9 +21,6 @@ pygame.display.set_caption("Virtual Garden")
 MAP_FOLDER_PATH = "virtualgarden\\gardens\\"
 MAPDATA_FILE_PATH = os.path.join(MAP_FOLDER_PATH, "gardens_data.json")
 assets_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-
-placed_objects = []
-loaded_images = {}
 
 
 # Vegetationsdaten mit allen relevanten Pfaden
@@ -114,96 +113,20 @@ VEGETATION_DATA = {
 }
 
 
-class GardenObject:
-    def __init__(self, name, image, cost: int):
-        self.name = name
-        self.cost = cost
-        if image in loaded_images:
-            self.image = loaded_images[image]
-        else:
-            img = pygame.image.load(image).convert_alpha()
+# NEU: ResourceManager (anstelle von globalem 'loaded_images')
+class ResourceManager:
+    def __init__(self):
+        self._images = {}  # ehemals loaded_images
+
+    def get_image(self, path):
+        """
+        Lädt (und cached) ein Bild, skaliert auf (SQUARE_SIZE, SQUARE_SIZE).
+        """
+        if path not in self._images:
+            img = pygame.image.load(path).convert_alpha()
             img = pygame.transform.scale(img, (SQUARE_SIZE, SQUARE_SIZE))
-            loaded_images[image] = img
-            self.image = img
-
-
-class PlacedObject:
-    def __init__(self, garden_object, location):
-        self.garden_object = garden_object
-        self.location = location
-        placed_objects.append(self)
-
-    def delete(self):
-        placed_objects.remove(self)
-        
-    def draw(self, win):
-        win.blit(self.garden_object.image, self.location)
-
-
-class Garden:
-    def __init__(self, map_file, garden_objects):
-        self.map_file = map_file
-        self.garden_objects = garden_objects
-        self.garden_map = []
-        self.init_garden_map()
-
-    def init_garden_map(self):
-        # Leere zunächst die globale Liste platzierter Objekte
-        placed_objects.clear()
-
-        # Prüfe, ob es die Datei schon gibt
-        if os.path.isfile(self.map_file):
-            with open(self.map_file, 'r') as f:
-                lines = f.read().splitlines()
-            for line in lines:
-                row_data = [int(ch) for ch in line]
-                self.garden_map.append(row_data)
-        else:
-            # Falls nein, erstelle einen leeren Garten (nur 0)
-            for _ in range(ROWS):
-                row_data = [0] * COLS
-                self.garden_map.append(row_data)
-
-        self.update_garden_map()
-
-    def update_garden_map(self):
-        """
-        Re-creates PlacedObject instances based on the garden_map.
-        We only create them for indices > 0 (everything that's NOT ground).
-        """
-        placed_objects.clear()
-        for y, row in enumerate(self.garden_map):
-            for x, element in enumerate(row):
-                if element != 0:
-                    PlacedObject(
-                        self.garden_objects[element],
-                        (x * SQUARE_SIZE, y * SQUARE_SIZE)
-                    )
-
-    def draw_garden_map(self, win):
-        # 1) Draw ground for every cell
-        for y in range(ROWS):
-            for x in range(COLS):
-                ground_object = self.garden_objects[0]  # index 0 is ground
-                win.blit(ground_object.image, (x * SQUARE_SIZE, y * SQUARE_SIZE))
-
-        # 2) Draw placed objects (these are all indices > 0)
-        for o in placed_objects:
-            o.draw(win)
-
-    def save_garden_map(self):
-        with open(self.map_file, 'w') as f:
-            for row in self.garden_map:
-                f.write("".join(map(str, row)) + "\n")
-
-    def place_object(self, object_index):
-        """
-        Platziert das Objekt (object_index) an der aktuellen Mausposition.
-        """
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        row = mouse_y // SQUARE_SIZE
-        col = mouse_x // SQUARE_SIZE
-        self.garden_map[row][col] = object_index
+            self._images[path] = img
+        return self._images[path]
 
 
 def load_garden_metadata():
@@ -237,17 +160,17 @@ def cleanup_garden_metadata():
     1. Entfernt Einträge in metadata, zu denen keine .map-Datei mehr existiert.
     2. Fügt Einträge für neue .map-Dateien hinzu, die noch nicht in metadata stehen (optional).
     """
-    # 1) Alle vorhandenen .map-Dateien sammeln
+    # Alle vorhandenen .map-Dateien sammeln
     all_map_files = [
         f for f in os.listdir(MAP_FOLDER_PATH) if f.endswith(".map")
     ]
     # Namen ohne .map
     all_garden_names = [os.path.splitext(f)[0] for f in all_map_files]
 
-    # 2) Metadaten laden
+    # Metadaten laden
     metadata = load_garden_metadata()  # Dictionary
 
-    # 3) Einträge entfernen, die keine .map-Datei mehr besitzen
+    # Einträge entfernen, die keine .map-Datei mehr besitzen
     to_remove = []
     for garden_name in metadata.keys():
         # Wenn garden_name nicht in all_garden_names => verwaister Eintrag
@@ -258,18 +181,13 @@ def cleanup_garden_metadata():
         del metadata[garden_name]
         print(f"[Cleanup] Removed metadata entry '{garden_name}' (no corresponding .map file).")
 
-    # 4) Einträge hinzufügen für neue .map-Dateien (optional)
-    #    Falls man das möchte, kann man hier eine Standard-Vegetation oder None setzen.
+    # Einträge hinzufügen für neue .map-Dateien
+    # Falls man das möchte, kann man hier eine Standard-Vegetation oder None setzen.
     for garden_name in all_garden_names:
         if garden_name not in metadata:
-            # Du kannst ein Standardobjekt definieren oder None zuweisen.
-            metadata[garden_name] = {
-                "vegetation": "Rainforest",  # z. B. als Default
-                # Weitere Felder falls gewünscht
-            }
+            metadata[garden_name] = {"vegetation": "Park", }
             print(f"[Cleanup] Added metadata entry '{garden_name}' with default vegetation.")
 
-    # 5) Speichern
     save_garden_metadata(metadata)
 
 
@@ -306,27 +224,28 @@ def choose_vegetation(win):
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 for (r, veg) in rect_list:
                     if r.collidepoint(mouse_x, mouse_y):
-                        return veg  # gewählte Vegetation
+                        return veg  # return chosen vegetation
 
     return None
 
 
-def create_garden_objects(vegetation):
+def create_garden_objects(vegetation, resource_manager):
     """
     Erzeugt eine Liste an GardenObject-Instanzen basierend auf
     den Daten aus VEGETATION_DATA für die gewünschte Vegetation.
+    resource_manager wird zum Laden der Bilder benötigt
     """
     data = VEGETATION_DATA[vegetation]
     
     # 1. Zuerst den Boden als Objekt (Index 0)
-    objects = [GardenObject("ground", data["ground"], cost=0)]
+    objects = [GardenObject("ground", data["ground"], cost=0, resource_manager=resource_manager)]
     
     # 2. Dann alle anderen Objekte
     for obj_data in data["objects"]:
         name = obj_data["name"]
         image = obj_data["image"]
         cost = obj_data["cost"]
-        objects.append(GardenObject(name, image, cost))
+        objects.append(GardenObject(name, image, cost, resource_manager=resource_manager))
 
     return objects
 
@@ -500,14 +419,14 @@ def draw_inventory(win, garden_objects, selected_object_index):
     return icon_rects
 
 
-def create_new_garden():
+def create_new_garden(resource_manager):
     # Vegetation auswählen
     vegetation_choice = choose_vegetation(WIN)
     if not vegetation_choice:
         return None  # Falls der User abbricht
     
     # Passende GardenObjects erzeugen
-    garden_objects = create_garden_objects(vegetation_choice)
+    garden_objects = create_garden_objects(vegetation_choice, resource_manager)
     
     # Name für neuen Garten
     garden_name = text_input_dialog(WIN, "Enter a name for your new garden:")
@@ -524,7 +443,7 @@ def create_new_garden():
     return garden
 
 
-def load_existing_garden():
+def load_existing_garden(resource_manager):
     chosen_file = load_garden_dialog(WIN)  # z. B. "MeinGarten.map"
     if not chosen_file:
         return None
@@ -540,7 +459,7 @@ def load_existing_garden():
     vegetation_choice = metadata.get(garden_name, {}).get("vegetation", "Rainforest")
     
     # Jetzt haben wir die korrekte Vegetation
-    garden_objects = create_garden_objects(vegetation_choice)
+    garden_objects = create_garden_objects(vegetation_choice, resource_manager)
 
     map_file = MAP_FOLDER_PATH + chosen_file
     garden = Garden(map_file, garden_objects)
@@ -590,7 +509,8 @@ def main():
     # Cleanup metadata right at the start
     cleanup_garden_metadata()
     
-    # create variables
+    # create variables and instances
+    resource_manager = ResourceManager()
     clock = pygame.time.Clock()
     available_points = load_json_data()
     garden = None
@@ -607,11 +527,11 @@ def main():
             subprocess.Popen(["python", "main.py"])  # open gui
             break  # close game
         elif action == "new":
-            garden = create_new_garden()
+            garden = create_new_garden(resource_manager)
             if not garden:
                 break
         elif action == "load":
-            garden = load_existing_garden()
+            garden = load_existing_garden(resource_manager)
             if not garden:
                 break
         else:
