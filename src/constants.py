@@ -31,9 +31,10 @@ COLOR_BLUE_HEX = '#1f3855'
 COLOR_BLUE_RGB = (31, 56, 85)
 
 # file paths
-JSON_FILE = "data.json"
-DB_FILE = "projects.db"
-MAP_FOLDER_PATH = "virtualgarden\\gardens\\"
+RESOURCES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "resources")
+ASSETS_PATH = os.path.join(RESOURCES_PATH, "assets\\")
+JSON_FILE = os.path.join(RESOURCES_PATH, "data.json")
+DB_FILE = os.path.join(RESOURCES_PATH, "projects.db")
+MAP_FOLDER_PATH = os.path.join(RESOURCES_PATH, "gardens\\")
 MAPDATA_FILE_PATH = os.path.join(MAP_FOLDER_PATH, "gardens_data.json")
-ASSETS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 IMGDIR_GUI_FLOWER_MEADOW = str(os.path.join(ASSETS_PATH, "Gemini_flower_meadow.jpg"))

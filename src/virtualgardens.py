@@ -2,9 +2,9 @@ import json
 import os
 import pygame
 import subprocess
-from virtualgarden.gardenobjects import GardenObject
-from virtualgarden.garden import Garden
-from common.constants import GAME_WIDTH, GAME_HEIGHT, SQUARE_SIZE, \
+from gardenobjects import GardenObject
+from garden import Garden
+from constants import GAME_WIDTH, GAME_HEIGHT, SQUARE_SIZE, \
                              JSON_FILE, ASSETS_PATH, MAP_FOLDER_PATH, MAPDATA_FILE_PATH
 
 # initialize pygame

@@ -12,9 +12,9 @@ from src.timemanagement import TimeManagement
 from src.pointssystem import PointsSystem
 from src.projectmanagement import ProjectManagement
 # from main_vg import main
-from common.constants import WIDTH, HEIGHT, \
+from src.constants import WIDTH, HEIGHT, \
     COLOR_BEIGE_HEX, COLOR_OCEANBAY_HEX, COLOR_OCEANBAY_RGB, COLOR_ROSE_RGB, COLOR_ROSE_HEX, COLOR_RED_HEX, \
-    IMGDIR_GUI_FLOWER_MEADOW, COLOR_SOFTCORAL_HEX
+    IMGDIR_GUI_FLOWER_MEADOW, COLOR_SOFTCORAL_HEX, JSON_FILE
 
 
 class CircleWithNumber(QWidget):
@@ -83,7 +83,7 @@ class ProjectsOverviewPieChart:
 class MainSession(QMainWindow):
     def __init__(self, connection: sqlite3.Connection):
         super().__init__()
-        self.data_filename = "data.json"
+        self.data_filename = JSON_FILE
         self.minute_counter = 0
         
         # Create class instances
@@ -589,7 +589,7 @@ class MainSession(QMainWindow):
     def handle_open_virtualgardens(self):
         """Start virtualgardens.py and close this app."""
         self.close()
-        subprocess.Popen(["python", "virtualgardens.py"])
+        subprocess.Popen(["python", "src\\virtualgardens.py"])
     
     def update_gui(self):
         """Update the GUI."""

@@ -2,7 +2,7 @@ import unittest
 import sqlite3
 from PyQt6.QtWidgets import QApplication
 from src.session import MainSession
-from common.constants import WIDTH, HEIGHT
+from src.constants import WIDTH, HEIGHT
 from src.projectmanagement import DB_FILE
 
 

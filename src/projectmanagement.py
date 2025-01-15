@@ -1,7 +1,7 @@
 import random
 import sqlite3
 from PyQt6.QtCore import QDate
-from common.constants import DB_FILE
+from src.constants import DB_FILE
 
 
 class ProjectManagement:

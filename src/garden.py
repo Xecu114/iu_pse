@@ -1,7 +1,7 @@
 import os
 import pygame
-from common.constants import SQUARE_SIZE, ROWS, COLS
-from virtualgarden.gardenobjects import PlacedObject
+from constants import SQUARE_SIZE, ROWS, COLS
+from gardenobjects import PlacedObject
 
 
 class Garden:
