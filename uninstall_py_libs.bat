@@ -1,13 +1,13 @@
 @echo off
 
-REM 1. Pakete deinstallieren
+REM 1. Uninstall packages
 pip uninstall pyqt6
 pip uninstall PyQt6-Charts
 pip uninstall pygame
 
-REM 2. Fertig
+REM 2. Done
 echo ----------------------------------------
-echo Deinstallation abgeschlossen.
-echo Druecke eine beliebige Taste zum Beenden...
+echo Unintallation completed.
+echo Press any key to exit...
 echo ----------------------------------------
 pause >nul
