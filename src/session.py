@@ -484,6 +484,7 @@ class MainSession(QMainWindow):
         self.project_start_date_edit.setDate(self.current_project.start_date)  # Set default date
         self.project_start_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
             color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.project_start_date_edit.dateChanged.connect(self.on_start_date_changed)  # call ... if date changes
         start_date_layout.addWidget(self.project_start_date_label)
         start_date_layout.addWidget(self.project_start_date_edit)
         layout.addLayout(start_date_layout)
@@ -494,13 +495,15 @@ class MainSession(QMainWindow):
         self.project_end_date_label.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
         self.project_end_date_edit = QDateEdit(self)
         self.project_end_date_edit.setCalendarPopup(True)  # Enable the calendar popup
+        self.project_end_date_edit.setMinimumDate(self.project_start_date_edit.date())  # Set minimum date
         self.project_end_date_edit.setDate(self.current_project.end_date)  # Set default date
         self.project_end_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
             color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
+        self.project_end_date_edit.dateChanged.connect(self.on_end_date_changed)  # call ... if date changes
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
-    
+        
     def gui_show_error(self, text):
         """Show error on gui."""
         self.input_error_label.setText(text)
@@ -586,6 +589,26 @@ class MainSession(QMainWindow):
             self.gui_show_error("Input must be a number")
             print(f"Input must be a number... input: {input}")  # debug message
 
+    def on_start_date_changed(self, new_date):
+        """
+        Is called as soon as the start date changes.
+        Here we ensure that the end date >= start date.
+        """
+        self.project_end_date_edit.setMinimumDate(new_date)
+        
+        # If end date is earlier then new start date, set it to the start date
+        if self.project_end_date_edit.date() < new_date:
+            self.project_end_date_edit.setDate(new_date)
+
+    def on_end_date_changed(self, new_date):
+        """
+        Is called as soon as the end date changes.
+        Here we make sure that it is not before the start date.
+        """
+        # If new end date is earlier then start date, set it to the start date
+        if new_date < self.project_start_date_edit.date():
+            self.project_end_date_edit.setDate(self.project_start_date_edit.date())
+    
     def handle_open_virtualgardens(self):
         """Start virtualgardens.py and close this app."""
         self.close()
