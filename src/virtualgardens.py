@@ -299,20 +299,26 @@ def text_input_dialog(win: pygame.Surface, prompt):
     """
     user_text = ""
     input_active = True
+    error_message = ""
 
     while input_active:
         win.fill((0, 0, 0))
 
+        # Render prompt
         prompt_surf = FONT.render(prompt, True, (255, 255, 255))
         win.blit(prompt_surf, (50, 50))
 
-        # user-input
+        # Render input box
         input_surf = FONT.render(user_text, True, (255, 255, 255))
-        # rect to cover input
-        input_rect = pygame.Rect(50, 100, 400, 40)
+        input_rect = pygame.Rect(50, 100, 400, 40)  # rect to cover input
         pygame.draw.rect(win, (100, 100, 100), input_rect)
         win.blit(input_surf, (input_rect.x + 5, input_rect.y + 5))
 
+        # Render error message if any
+        if error_message:
+            error_surf = FONT.render(error_message, True, (255, 0, 0))
+            win.blit(error_surf, (50, 150))
+        
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -321,12 +327,18 @@ def text_input_dialog(win: pygame.Surface, prompt):
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    input_active = False
+                    if not user_text.strip():
+                        error_message = "Name cannot be empty."
+                    elif len(user_text) > 40:
+                        error_message = "Name cannot exceed 40 characters."
+                    else:
+                        input_active = False
+                        return user_text  # Valid name entered
                 elif event.key == pygame.K_BACKSPACE:
                     user_text = user_text[:-1]
-                else:
-                    # normal character or number
-                    user_text += event.unicode
+                else:  # normal letter, number, symbol
+                    if len(user_text) < 40:  # Prevent adding more than 40 characters
+                        user_text += event.unicode
 
     return user_text
 

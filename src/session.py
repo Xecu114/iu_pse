@@ -442,7 +442,7 @@ class MainSession(QMainWindow):
         inputv1_layout.addWidget(self.pr_name_input_label)
         inputv2_layout.addWidget(self.pr_name_input)
         # connect to update dropdown menu
-        self.pr_name_input.textChanged.connect(self.handle_update_projects_dropdown_menu)
+        self.pr_name_input.textChanged.connect(self.handle_update_project_name)
         
         # Label next to the input box
         self.pr_description_input_label = QLabel("Description")
@@ -484,7 +484,7 @@ class MainSession(QMainWindow):
         self.project_start_date_edit.setDate(self.current_project.start_date)  # Set default date
         self.project_start_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
             color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
-        self.project_start_date_edit.dateChanged.connect(self.on_start_date_changed)  # call ... if date changes
+        self.project_start_date_edit.dateChanged.connect(self.handle_start_date_changed)  # call ... if date changes
         start_date_layout.addWidget(self.project_start_date_label)
         start_date_layout.addWidget(self.project_start_date_edit)
         layout.addLayout(start_date_layout)
@@ -499,7 +499,7 @@ class MainSession(QMainWindow):
         self.project_end_date_edit.setDate(self.current_project.end_date)  # Set default date
         self.project_end_date_edit.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold;\
             color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
-        self.project_end_date_edit.dateChanged.connect(self.on_end_date_changed)  # call ... if date changes
+        self.project_end_date_edit.dateChanged.connect(self.handle_end_date_changed)  # call ... if date changes
         end_date_layout.addWidget(self.project_end_date_label)
         end_date_layout.addWidget(self.project_end_date_edit)
         layout.addLayout(end_date_layout)
@@ -571,7 +571,20 @@ class MainSession(QMainWindow):
         self.project_start_date_edit.setDate(self.current_project.start_date)
         self.project_end_date_edit.setDate(self.current_project.end_date)
 
-    def handle_update_projects_dropdown_menu(self):
+    def handle_update_project_name(self):
+        text = self.pr_name_input.text()
+        if len(text) > 40:
+            # Truncate the text to 40 characters
+            self.pr_name_input.setText(text[:40])
+            self.pr_name_input.setCursorPosition(40)  # Set cursor to the end
+        elif not text.strip():
+            # Prevent empty input
+            self.pr_name_input.setStyleSheet("font-size: 14px; padding: 5px; font-weight: bold; \
+                color: red; border: 2px solid red;")
+        else:
+            # Restore original style if valid
+            self.pr_name_input.setStyleSheet(f"font-size: 14px; padding: 5px; font-weight: bold; \
+                color: {COLOR_OCEANBAY_HEX}; border: 2px solid {COLOR_SOFTCORAL_HEX};")
         self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
  
     def handle_add_time_to_project(self):
@@ -589,7 +602,7 @@ class MainSession(QMainWindow):
             self.gui_show_error("Input must be a number")
             print(f"Input must be a number... input: {input}")  # debug message
 
-    def on_start_date_changed(self, new_date):
+    def handle_start_date_changed(self, new_date):
         """
         Is called as soon as the start date changes.
         Here we ensure that the end date >= start date.
@@ -600,7 +613,7 @@ class MainSession(QMainWindow):
         if self.project_end_date_edit.date() < new_date:
             self.project_end_date_edit.setDate(new_date)
 
-    def on_end_date_changed(self, new_date):
+    def handle_end_date_changed(self, new_date):
         """
         Is called as soon as the end date changes.
         Here we make sure that it is not before the start date.
