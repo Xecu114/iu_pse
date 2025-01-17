@@ -18,6 +18,26 @@ from src.constants import WIDTH, HEIGHT, \
 
 
 class CircleWithNumber(QWidget):
+    """
+    Create a custom QWidget that displays a circle with a number centered inside.
+    
+    Parameters:
+        number (int): The number to display inside the circle.
+        w (int): The width of the widget.
+        h (int): The height of the widget.
+        color_circle (tuple): A tuple of three integers representing the RGB color of the circle.
+        color_number (tuple): A tuple of three integers representing the RGB color of the number.
+        parent (QWidget, optional): The parent widget. Defaults to None.
+    
+    Example:
+        circle_widget = CircleWithNumber(
+            number=5,
+            w=100,
+            h=100,
+            color_circle=(255, 0, 0),
+            color_number=(255, 255, 255)
+        )
+    """
     def __init__(self, number, w, h, color_circle: tuple, color_number: tuple, parent=None):
         super().__init__(parent)
         self.number = number
@@ -52,6 +72,21 @@ class CircleWithNumber(QWidget):
 
 
 class ProjectsOverviewPieChart:
+    """
+    Create and manage a pie chart that provides an overview of projects and their associated data.
+
+    Attributes:
+        chart (QChart): The main chart object.
+        series (QPieSeries): The pie series object representing the data in the chart.
+        chart_view (QChartView): The view for rendering the chart.
+    
+    Example:
+        pie_chart = ProjectsOverviewPieChart()
+        pie_chart.update_data(
+            project_names=["Project A", "Project B"],
+            time_tracked_list=[10, 20]
+        )
+    """
     def __init__(self):
         # Initialisierung der Diagrammkomponenten
         self.chart = QChart()
@@ -73,7 +108,19 @@ class ProjectsOverviewPieChart:
         # self.layout.addWidget(self.chart_view)
 
     def update_data(self, project_names, time_tracked_list):
-        """Aktualisiere das Diagramm mit den neuesten Daten."""
+        """
+        Update the pie chart with the latest project data.
+
+        Parameters:
+            project_names (list of str): A list of project names to be displayed on the pie chart.
+            time_tracked_list (list of float or int): A list of time tracked values corresponding to each project.
+        
+        Example:
+            pie_chart.update_data(
+                project_names=["Project A", "Project B"],
+                time_tracked_list=[10, 20]
+            )
+        """
 
         self.series.clear()  # Vorhandene Daten entfernen
         for i, name in enumerate(project_names):
@@ -81,10 +128,28 @@ class ProjectsOverviewPieChart:
 
 
 class MainSession(QMainWindow):
+    """
+    Main application window, managing the PYQt6 user interface,
+    data handling and periodic updates.
+
+    Attributes:
+        minute_counter (int): Counter for minutes elapsed.
+        point_system (PointsSystem): Instance of the points management system.
+        time_manager (TimeManagement): Instance of the time management system.
+        conn (sqlite3.Connection): SQLite database connection.
+        current_project (ProjectManagement): Instance of the project management system.
+    
+    Example:
+        connection = sqlite3.connect("database.db")
+        app = QApplication(sys.argv)
+        main_session = MainSession(connection)
+        main_session.show()
+        sys.exit(app.exec_())
+    """
+
     def __init__(self, connection: sqlite3.Connection):
         super().__init__()
-        self.data_filename = JSON_FILE
-        self.minute_counter = 0
+        self.minute_counter = 0  # init local minute counter
         
         # Create class instances
         self.point_system = PointsSystem()
@@ -92,16 +157,19 @@ class MainSession(QMainWindow):
         self.conn = connection
         self.current_project = ProjectManagement(self.conn)
         
-        # UI
+        # UI setup
         self.setWindowTitle("ProductivityGarden")
         self.setGeometry(100, 100, WIDTH, HEIGHT)
         self.setup_gui()
         
+        # get user data from json
         self.load_json_data()
+        
+        # initial component updates
         self.update_high_frequency()
         self.update_low_frequency()
         
-        # Timer for updating the clock label
+        # Timer for updating various components of the application at different frequencies
         self.update_timer_high_frequency = QTimer(self)
         self.update_timer_high_frequency.timeout.connect(self.update_high_frequency)
         self.update_timer_high_frequency.start(250)
@@ -142,8 +210,10 @@ class MainSession(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def gui_create_first_column(self):
-        """Create the first column with the points overview,
-        "to the gardens" navigation button and an image of a meadow"""
+        """
+        Create the first column with the points overview,
+        "to the gardens" navigation button and an image of a meadow
+        """
         layout = QVBoxLayout()
         
         # create point overview
@@ -217,6 +287,7 @@ class MainSession(QMainWindow):
         return separator
 
     def gui_create_button(self, text, main_color: str, callback=None):
+        """ Method helps create a button, so that each button has a similar style """
         button = QPushButton(text)
         button.setStyleSheet(f"""
             QPushButton{{
@@ -241,6 +312,7 @@ class MainSession(QMainWindow):
         return button
 
     def gui_draw_point_overview(self, layout : QVBoxLayout):
+        """ init and draw the whole "point overview" area """
         # Text Element
         points_label = QLabel("POINTS")
         points_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
@@ -280,6 +352,7 @@ class MainSession(QMainWindow):
         layout.addLayout(circle_and_text_layout_tot)
 
     def gui_draw_time_management_area(self, layout : QVBoxLayout):
+        """ init and draw the whole "time management" area """
         # Display current timer mode
         self.timer_mode_label = QLabel(self.time_manager.selected_timer.upper())
         self.timer_mode_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {COLOR_OCEANBAY_HEX}")
@@ -361,6 +434,7 @@ class MainSession(QMainWindow):
         layout.addWidget(self.mode_toggle_button)
 
     def gui_draw_project_overview(self, layout : QVBoxLayout):
+        """ init and draw the whole "projects" area including the edit area """
         layout = layout
         
         # Text "Projects"
@@ -424,6 +498,7 @@ class MainSession(QMainWindow):
         layout.addLayout(layout_add_time)
 
     def gui_draw_project_info_area(self, layout : QVBoxLayout):
+        """ add project info (editable) area to the project overview with this method """
         # build layout for input fields
         inputh_layout = QHBoxLayout()
         inputv1_layout = QVBoxLayout()
@@ -510,7 +585,7 @@ class MainSession(QMainWindow):
         self.input_error_label.setVisible(True)
     
     def handle_start_time(self):
-        """Start the stopwatch or timer."""
+        """Handle a click on the "Start" button."""
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "stopwatch":
             self.time_manager.start_stopwatch()
@@ -533,17 +608,21 @@ class MainSession(QMainWindow):
                 self.time_manager.start_timer()
 
     def handle_pause_time(self):
-        """Pause or resume the timer/stopwatch."""
+        """Handle a click on the "Pause" button."""
         if self.time_manager.mode == "running":
             self.time_manager.pause()  # Pause the timer/stopwatch
         elif self.time_manager.mode == "paused":
             self.time_manager.resume()  # Resume the timer/stopwatch
 
     def handle_stop_time(self):
+        """Handle a click on the "Stop" button."""
         self.time_manager.stop()
     
     def handle_toggle_mode(self):
-        """Switch between Pomodoro-Timer, Timer and Stopwatch."""
+        """
+        Handle a click on "Switch to ..." button.
+        Switches between Pomodoro-Timer, Timer and Stopwatch.
+        """
         self.input_error_label.setVisible(False)  # reset error on gui
         if self.time_manager.selected_timer == "pomodoro":
             self.time_manager.set_timer_mode("timer")
@@ -553,16 +632,19 @@ class MainSession(QMainWindow):
             self.time_manager.set_timer_mode("pomodoro")
     
     def handle_add_new_project(self):
+        """Handle a click on the "Add" new project button."""
         self.current_project.add_project()
         self.projects_dropdown.addItem(self.current_project.name)
         self.projects_dropdown.setCurrentIndex(self.projects_dropdown.count()-1)
         
     def handle_delete_project(self):
+        """Handle a click on the "Delete" project button."""
         self.current_project.delete_project()
         self.projects_dropdown.removeItem(self.projects_dropdown.currentIndex())
         self.projects_dropdown.setCurrentIndex(0)
     
     def handle_select_project_from_dropdown(self):
+        """Handle a click on another project in the projects dropdown menu."""
         self.current_project.id = ProjectManagement.get_id_by_name(self.projects_dropdown.currentText(), self.conn)
         self.current_project.load_data_from_sql()
         self.pr_name_input.setText(self.current_project.name)
@@ -572,6 +654,10 @@ class MainSession(QMainWindow):
         self.project_end_date_edit.setDate(self.current_project.end_date)
 
     def handle_update_project_name(self):
+        """
+        Validate the user input for the project name and
+        update the projects dropdown menu
+        """
         text = self.pr_name_input.text()
         if len(text) > 40:
             # Truncate the text to 40 characters
@@ -588,6 +674,7 @@ class MainSession(QMainWindow):
         self.projects_dropdown.setItemText(self.projects_dropdown.currentIndex(), self.pr_name_input.text())
  
     def handle_add_time_to_project(self):
+        """Handle the manual add time to the current project input field"""
         self.input_error_label.setVisible(False)
         input = self.pr_add_time.text()
         self.pr_add_time.setText("")
@@ -605,7 +692,7 @@ class MainSession(QMainWindow):
     def handle_start_date_changed(self, new_date):
         """
         Is called as soon as the start date changes.
-        Here we ensure that the end date >= start date.
+        Ensures that the end date >= start date.
         """
         self.project_end_date_edit.setMinimumDate(new_date)
         
@@ -616,7 +703,7 @@ class MainSession(QMainWindow):
     def handle_end_date_changed(self, new_date):
         """
         Is called as soon as the end date changes.
-        Here we make sure that it is not before the start date.
+        Ensures that it is not before the start date.
         """
         # If new end date is earlier then start date, set it to the start date
         if new_date < self.project_start_date_edit.date():
@@ -628,9 +715,13 @@ class MainSession(QMainWindow):
         subprocess.Popen(["python", "src\\virtualgardens.py"])
     
     def update_gui(self):
-        """Update the GUI."""
+        """
+        Update the GUI frequently.
+        Only updates the time management area.
+        Other areas are handled on demand or less frequent.
+        """
         
-        # Time Management
+        # update time management area -> handle switch between pomodoro, timer and stopwatch
         self.timer_mode_label.setText(self.time_manager.selected_timer.upper())
         if self.time_manager.selected_timer == "pomodoro":
             self.mode_toggle_button.setText("Switch to Timer")
@@ -661,6 +752,7 @@ class MainSession(QMainWindow):
             if self.time_manager.mode == "running":
                 self.clock_label.setText(self.time_manager.elapsed_time.toString("hh:mm:ss"))
         
+        # update "Pause"/"Resume" button depending on current state
         if self.time_manager.mode == "running":
             self.pause_button.setText("Pause")
         elif self.time_manager.mode == "paused":
@@ -670,28 +762,31 @@ class MainSession(QMainWindow):
             self.pause_button.setText("-")
     
     def sync_variables(self):
+        """Update and synchronize various variables"""
         # get counter of productiv minutes from timemanagement
+        # add the time to the local counter
         self.minute_counter += self.time_manager.productiv_minutes
-        if self.minute_counter >= 10:
+        if self.minute_counter >= 10:  # add points to point system every 10 minutes
             self.point_system.add_points(self.minute_counter//10)
             self.minute_counter = self.minute_counter % 10
         
-        # Project Management
+        # write project data from gui to the backend class
         self.current_project.add_time(self.time_manager.productiv_minutes)
         self.current_project.start_date = self.project_start_date_edit.date()
         self.current_project.end_date = self.project_end_date_edit.date()
-        
-        self.time_manager.productiv_minutes = 0  # reset local counter after reading
-        
         self.current_project.name = self.pr_name_input.text()
         self.current_project.description = self.pr_description_input.text()
         self.current_project.type = self.pr_type_input.text()
+        
+        self.time_manager.productiv_minutes = 0  # reset counter after reading
 
     def update_high_frequency(self):
+        """Updates components of the application at high frequency (e.g., every 250ms)."""
         self.sync_variables()
         self.update_gui()
     
     def update_low_frequency(self):
+        """Updates components of the application at low frequency (e.g., every 2000ms)."""
         # save data
         self.save_json_data()
         self.current_project.update_data_in_sql()
@@ -707,7 +802,7 @@ class MainSession(QMainWindow):
             ProjectManagement.get_projects_time_tracked_list(self.conn))
     
     def save_json_data(self):
-        # save points and settings to json file
+        """Save user data to a json file"""
         total_points, available_points = self.point_system.get_points()
         pomodoro_work_input = self.pomodoro_work_input.text()
         pomodoro_break_input = self.pomodoro_break_input.text()
@@ -721,14 +816,15 @@ class MainSession(QMainWindow):
             "timer_input_field": timer_input_field,
             "text_box": text_box
             }
-        with open(self.data_filename, "w") as file:
+        with open(JSON_FILE, "w") as file:
             json.dump(data, file)
         
     def load_json_data(self):
-        if not os.path.exists(self.data_filename):
+        """Load user data from a json file"""
+        if not os.path.exists(JSON_FILE):
             self.save_json_data()  # create file with default values
         else:
-            with open(self.data_filename, "r") as file:
+            with open(JSON_FILE, "r") as file:
                 data = json.load(file)
                 self.point_system.set_points(data["total_points"], data["available_points"])
                 self.pomodoro_work_input.setText(data["pomodoro_work_input"])
@@ -737,6 +833,11 @@ class MainSession(QMainWindow):
                 self.text_box.setPlainText(data["text_box"])
 
     def validate_timer_input(self, input_text):
+        """
+        Checks the timer time input field.
+        Validates that the input string has the correct format and
+        a reasonable value
+        """
         # Regular expression for hh:mm:ss format
         regex = r"^\d{1,2}:[0-5]\d:[0-5]\d$"
 
