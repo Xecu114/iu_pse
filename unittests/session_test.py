@@ -105,7 +105,7 @@ class TestMainSession(unittest.TestCase):
         self.assertEqual(new_session.timer_input_field.text(), "01:00:00")
         self.assertEqual(new_session.text_box.toPlainText(), "Test text")
     
-    """ not needed - gui tests are covered manually
+    """ not necessary - gui tests are covered manually
     
     def test_circle_with_number_initialization(self):
         circle = CircleWithNumber(5, 60, 60, (255, 0, 0), (0, 0, 0))
