@@ -600,6 +600,8 @@ def main():
                                     garden.update_garden_map()
                                 else:
                                     print("Not enough points!")  # show only in debugging window
+                                # save garden data
+                                garden.save_garden_map()
 
     # save data before closing the window
     save_json_data(available_points)
