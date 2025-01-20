@@ -1,1 +1,8 @@
-{}
+{
+    "parksystemtest": {
+        "vegetation": "City Park"
+    },
+    "desert2": {
+        "vegetation": "Desert"
+    }
+}

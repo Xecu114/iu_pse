@@ -165,6 +165,6 @@ cython_debug/
 
 .vscode/
 
-virtualgarden/gardens/
+resources/gardens/
 data.json
 *.db
