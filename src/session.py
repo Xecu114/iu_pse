@@ -712,7 +712,7 @@ class MainSession(QMainWindow):
     def handle_open_virtualgardens(self):
         """Start virtualgardens.py and close this app."""
         self.close()
-        subprocess.Popen(["python", "src\\virtualgardens.py"])
+        subprocess.Popen(["python", "virtualgardens.py"])
     
     def update_gui(self):
         """

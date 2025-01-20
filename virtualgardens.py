@@ -2,9 +2,9 @@ import json
 import os
 import pygame
 import subprocess
-from gardenobjects import GardenObject
-from garden import Garden
-from constants import GAME_WIDTH, GAME_HEIGHT, SQUARE_SIZE, \
+from src.gardenobjects import GardenObject
+from src.garden import Garden
+from src.constants import GAME_WIDTH, GAME_HEIGHT, SQUARE_SIZE, \
                              JSON_FILE, ASSETS_PATH, MAP_FOLDER_PATH, MAPDATA_FILE_PATH
 
 # initialize pygame
@@ -610,7 +610,9 @@ def main():
     except AttributeError:
         pass
     pygame.quit()
+    return
 
 
 if __name__ == "__main__":
     main()
+    print("See you soon")
