@@ -8,9 +8,10 @@ Users can track their productive time, collect points and use them to create vir
 The application is easy to use and suitable for work, learning and other activities.
 
 ## Getting Started
-1. Necessary python packages: pygame, PyQt6
+1. Python version: >3.9
+2. Necessary python packages: pygame, PyQt6, (PyQt6-Charts)
     -> can be installed by running the script "install_py_libs.bat"
-2. start main.py (for example with the cmd "python .\main.py")
+3. start main.py (for example with the cmd "python .\main.py")
 
 ## Cleanup/Uninstallation
 1. run "uninstall_py_libs.bat" if you dont want to keep the additional python modules
